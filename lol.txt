@@ -1,0 +1,345 @@
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/TunnelWallBlock.scala:116:75: expression expected but [31mif[0m found
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/client/CompactMachinesClient.scala:41:28: end of statement expected but '=' found
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/client/CompactMachinesClient.scala:42:35: end of statement expected but '=' found
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/client/CompactMachinesClient.scala:43:50: end of statement expected but '=' found
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/client/CompactMachinesClient.scala:45:53: end of statement expected but '=' found
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/client/CompactMachinesClient.scala:59:38: end of statement expected but '=' found
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/client/CompactMachinesClient.scala:60:29: end of statement expected but '=' found
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/client/CompactMachinesClient.scala:64:40: end of statement expected but '=' found
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/client/CompactMachinesClient.scala:68:36: end of statement expected but 'type' found
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/client/CompactMachinesClient.scala:69:29: expression expected but [31mtype[0m found
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/client/CompactMachinesClient.scala:78:13: unindent expected, but '}' found
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/client/CompactMachinesClient.scala:79:9: ')' expected, but unindent found
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/item/PSDItem.scala:47:53: expression expected but [31melse[0m found
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/item/PSDItem.scala:52:1: unindent expected, but eof found
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/CompactMachines.scala:248:8: value category is not a member of net.minecraft.world.biome.Biome#Builder | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+net.minecraft.world.biome.Biome#Builder | Null could be null at runtime.
+If you want to select category without checking for a null value,
+insert a .nn before .category or import scala.language.unsafeNulls.
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/CompactMachines.scala:69:16: Not found: Identifer
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/CompactMachines.scala:73:71: value strength is not a member of net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings | Null could be null at runtime.
+If you want to select strength without checking for a null value,
+insert a .nn before .strength or import scala.language.unsafeNulls.
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/CompactMachines.scala:74:68: value strength is not a member of net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings | Null could be null at runtime.
+If you want to select strength without checking for a null value,
+insert a .nn before .strength or import scala.language.unsafeNulls.
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/MachineBlock.scala:36:30: Not found: type Settings
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/item/PSDItem.scala:22:25: Not found: type Settings
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/MachineWallBlock.scala:13:34: Not found: type Settings
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/AbstractWallBlock.scala:39:35: Not found: type Settings
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/TunnelWallBlock.scala:36:33: Not found: type Settings
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/entity/MachineWallBlockEntity.scala:9:3: Not found: type AbstractWallBlockEntity
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/entity/TunnelWallBlockEntity.scala:35:11: Not found: type AbstractWallBlockEntity
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/enums/TunnelDirection.scala:6:73: [33mclass[0m [35mEnum[0m is not a trait
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/entity/MachineBlockEntity.scala:16:39: value enums is not a member of us.dison.compactmachines.block
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/CompactMachines.scala:81:78: value GIANT is not a member of object us.dison.compactmachines.enums.MachineSize
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/CompactMachines.scala:82:80: value MAXIMUM is not a member of object us.dison.compactmachines.enums.MachineSize
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/CompactMachines.scala:89:31: missing argument for parameter tunnelType of [33mconstructor[0m [35mTunnelItem[0m in [33mclass[0m [35mTunnelItem[0m: (settings: net.minecraft.item.Item.Settings, tunnelType: 
+  Option[us.dison.compactmachines.data.persistent.tunnel.TunnelType]
+): us.dison.compactmachines.item.TunnelItem
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/CompactMachines.scala:102:6: value icon is not a member of net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder | Null could be null at runtime.
+If you want to select icon without checking for a null value,
+insert a .nn before .icon or import scala.language.unsafeNulls.
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/CompactMachines.scala:122:24: postfix operator `BLOCK_MACHINE_TINY` needs to be enabled
+by making the implicit value scala.language.postfixOps visible.
+----
+This can be achieved by adding the import clause 'import scala.language.postfixOps'
+or by setting the compiler option -language:postfixOps.
+See the Scaladoc for value scala.language.postfixOps for a discussion
+why the feature needs to be explicitly enabled.
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/CompactMachines.scala:129:221: missing arguments for [33mmethod[0m [35mapply[0m in [33mobject[0m [35mTunnelWallBlockEntity[0m
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/CompactMachines.scala:130:225: missing arguments for [33mmethod[0m [35mapply[0m in [33mobject[0m [35mMachineWallBlockEntity[0m
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/CompactMachines.scala:134:21: Overloaded or recursive [33mmethod[0m [35mroomManager[0m needs return type
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/CompactMachines.scala:135:17: Overloaded or recursive [33mmethod[0m [35mcmWorld[0m needs return type
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/CompactMachines.scala:138:28: value register is not a member of net.fabricmc.fabric.api.event.Event[
+  net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents#Load
+] | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+net.fabricmc.fabric.api.event.Event[
+  net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents#Load
+] | Null could be null at runtime.
+If you want to select register without checking for a null value,
+insert a .nn before .register or import scala.language.unsafeNulls.
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/CompactMachines.scala:142:23: value START_WORLD_TICK is not a member of object net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/CompactMachines.scala:146:23: value SERVER_STARTED is not a member of object net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/CompactMachines.scala:153:23: value registerForBlockEntity is not a member of net.fabricmc.fabric.api.lookup.v1.block.BlockApiLookup[
+  net.fabricmc.fabric.api.transfer.v1².storage.Storage[
+    net.fabricmc.fabric.api.transfer.v1².item.ItemVariant
+  ]
+, net.minecraft.util.math.Direction] | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+net.fabricmc.fabric.api.lookup.v1.block.BlockApiLookup[
+  net.fabricmc.fabric.api.transfer.v1.storage.Storage[
+    net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
+  ]
+, net.minecraft.util.math.Direction] | Null could be null at runtime.
+If you want to select registerForBlockEntity without checking for a null value,
+insert a .nn before .registerForBlockEntity or import scala.language.unsafeNulls.
+
+where:    v1  is a package in [33mpackage[0m [35mnet.fabricmc.fabric.api.lookup[0m
+          v1² is a package in [33mpackage[0m [35mnet.fabricmc.fabric.api.transfer[0m
+
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/CompactMachines.scala:171:24: value registerForBlockEntity is not a member of net.fabricmc.fabric.api.lookup.v1.block.BlockApiLookup[
+  net.fabricmc.fabric.api.transfer.v1².storage.Storage[
+    net.fabricmc.fabric.api.transfer.v1².fluid.FluidVariant
+  ]
+, net.minecraft.util.math.Direction] | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+net.fabricmc.fabric.api.lookup.v1.block.BlockApiLookup[
+  net.fabricmc.fabric.api.transfer.v1.storage.Storage[
+    net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant
+  ]
+, net.minecraft.util.math.Direction] | Null could be null at runtime.
+If you want to select registerForBlockEntity without checking for a null value,
+insert a .nn before .registerForBlockEntity or import scala.language.unsafeNulls.
+
+where:    v1  is a package in [33mpackage[0m [35mnet.fabricmc.fabric.api.lookup[0m
+          v1² is a package in [33mpackage[0m [35mnet.fabricmc.fabric.api.transfer[0m
+
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/CompactMachines.scala:189:25: value registerForBlockEntity is not a member of net.fabricmc.fabric.api.lookup.v1.block.BlockApiLookup[
+  team.reborn.energy.api².EnergyStorage
+, net.minecraft.util.math.Direction] | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+net.fabricmc.fabric.api.lookup.v1.block.BlockApiLookup[
+  team.reborn.energy.api.EnergyStorage
+, net.minecraft.util.math.Direction] | Null could be null at runtime.
+If you want to select registerForBlockEntity without checking for a null value,
+insert a .nn before .registerForBlockEntity or import scala.language.unsafeNulls.
+
+where:    api  is a package in [33mpackage[0m [35mnet.fabricmc.fabric[0m
+          api² is a package in [33mpackage[0m [35mteam.reborn.energy[0m
+
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/CompactMachines.scala:207:23: value registerForBlockEntity is not a member of net.fabricmc.fabric.api.lookup.v1.block.BlockApiLookup[
+  net.fabricmc.fabric.api.transfer.v1².storage.Storage[
+    net.fabricmc.fabric.api.transfer.v1².item.ItemVariant
+  ]
+, net.minecraft.util.math.Direction] | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+net.fabricmc.fabric.api.lookup.v1.block.BlockApiLookup[
+  net.fabricmc.fabric.api.transfer.v1.storage.Storage[
+    net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
+  ]
+, net.minecraft.util.math.Direction] | Null could be null at runtime.
+If you want to select registerForBlockEntity without checking for a null value,
+insert a .nn before .registerForBlockEntity or import scala.language.unsafeNulls.
+
+where:    v1  is a package in [33mpackage[0m [35mnet.fabricmc.fabric.api.lookup[0m
+          v1² is a package in [33mpackage[0m [35mnet.fabricmc.fabric.api.transfer[0m
+
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/CompactMachines.scala:211:24: value registerForBlockEntity is not a member of net.fabricmc.fabric.api.lookup.v1.block.BlockApiLookup[
+  net.fabricmc.fabric.api.transfer.v1².storage.Storage[
+    net.fabricmc.fabric.api.transfer.v1².fluid.FluidVariant
+  ]
+, net.minecraft.util.math.Direction] | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+net.fabricmc.fabric.api.lookup.v1.block.BlockApiLookup[
+  net.fabricmc.fabric.api.transfer.v1.storage.Storage[
+    net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant
+  ]
+, net.minecraft.util.math.Direction] | Null could be null at runtime.
+If you want to select registerForBlockEntity without checking for a null value,
+insert a .nn before .registerForBlockEntity or import scala.language.unsafeNulls.
+
+where:    v1  is a package in [33mpackage[0m [35mnet.fabricmc.fabric.api.lookup[0m
+          v1² is a package in [33mpackage[0m [35mnet.fabricmc.fabric.api.transfer[0m
+
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/CompactMachines.scala:215:25: value registerForBlockEntity is not a member of net.fabricmc.fabric.api.lookup.v1.block.BlockApiLookup[
+  team.reborn.energy.api².EnergyStorage
+, net.minecraft.util.math.Direction] | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+net.fabricmc.fabric.api.lookup.v1.block.BlockApiLookup[
+  team.reborn.energy.api.EnergyStorage
+, net.minecraft.util.math.Direction] | Null could be null at runtime.
+If you want to select registerForBlockEntity without checking for a null value,
+insert a .nn before .registerForBlockEntity or import scala.language.unsafeNulls.
+
+where:    api  is a package in [33mpackage[0m [35mnet.fabricmc.fabric[0m
+          api² is a package in [33mpackage[0m [35mteam.reborn.energy[0m
+
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/CompactMachines.scala:241:12: value info is not a member of org.apache.logging.log4j.Logger | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+org.apache.logging.log4j.Logger | Null could be null at runtime.
+If you want to select info without checking for a null value,
+insert a .nn before .info or import scala.language.unsafeNulls.
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/AbstractWallBlock.scala:28:39: value enums is not a member of us.dison.compactmachines.block
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/AbstractWallBlock.scala:39:85: [33mtrait[0m [35mAbstractWallBlock[0m may not call constructor of [33mclass[0m [35mBlockWithEntity[0m
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/AbstractWallBlock.scala:41:139: Not found: type BlockResultHit
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/AbstractWallBlock.scala:45:29: value getBlockEntity is not a member of net.minecraft.world.World | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+net.minecraft.world.World | Null could be null at runtime.
+If you want to select getBlockEntity without checking for a null value,
+insert a .nn before .getBlockEntity or import scala.language.unsafeNulls.
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/AbstractWallBlock.scala:54:17: value getStackInHand is not a member of net.minecraft.entity.player.PlayerEntity | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+net.minecraft.entity.player.PlayerEntity | Null could be null at runtime.
+If you want to select getStackInHand without checking for a null value,
+insert a .nn before .getStackInHand or import scala.language.unsafeNulls.
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/AbstractWallBlock.scala:55:28: value getStackInHand is not a member of net.minecraft.entity.player.PlayerEntity | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+net.minecraft.entity.player.PlayerEntity | Null could be null at runtime.
+If you want to select getStackInHand without checking for a null value,
+insert a .nn before .getStackInHand or import scala.language.unsafeNulls.
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/AbstractWallBlock.scala:59:17: value breakBlock is not a member of net.minecraft.world.World | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+net.minecraft.world.World | Null could be null at runtime.
+If you want to select breakBlock without checking for a null value,
+insert a .nn before .breakBlock or import scala.language.unsafeNulls.
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/AbstractWallBlock.scala:60:17: value setBlockState is not a member of net.minecraft.world.World | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+net.minecraft.world.World | Null could be null at runtime.
+If you want to select setBlockState without checking for a null value,
+insert a .nn before .setBlockState or import scala.language.unsafeNulls.
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/AbstractWallBlock.scala:64:20: value getBlockEntity is not a member of net.minecraft.world.World | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+net.minecraft.world.World | Null could be null at runtime.
+If you want to select getBlockEntity without checking for a null value,
+insert a .nn before .getBlockEntity or import scala.language.unsafeNulls.
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/AbstractWallBlock.scala:65:38: value getBlockEntity is not a member of net.minecraft.world.World | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+net.minecraft.world.World | Null could be null at runtime.
+If you want to select getBlockEntity without checking for a null value,
+insert a .nn before .getBlockEntity or import scala.language.unsafeNulls.
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/AbstractWallBlock.scala:66:71: Found:    [1m[31m([0m[1m[31mtunnelType[0m[1m[31m [0m[1m[31m:[0m[1m[31m [0m[1m[31mOption[0m[1m[31m[[0mus.dison.compactmachines.data.persistent.tunnel.TunnelType[1m[31m][0m
+[1m[31m [0m[1m[31m [0m[1m[31m)[0m
+Required: us.dison.compactmachines.data.persistent.tunnel.TunnelType
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/AbstractWallBlock.scala:73:19: value setBlockState is not a member of net.minecraft.world.World | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+net.minecraft.world.World | Null could be null at runtime.
+If you want to select setBlockState without checking for a null value,
+insert a .nn before .setBlockState or import scala.language.unsafeNulls.
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/AbstractWallBlock.scala:73:44: value getBlockState is not a member of net.minecraft.world.World | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+net.minecraft.world.World | Null could be null at runtime.
+If you want to select getBlockState without checking for a null value,
+insert a .nn before .getBlockState or import scala.language.unsafeNulls.
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/AbstractWallBlock.scala:75:22: value getBlockState is not a member of net.minecraft.world.World | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+net.minecraft.world.World | Null could be null at runtime.
+If you want to select getBlockState without checking for a null value,
+insert a .nn before .getBlockState or import scala.language.unsafeNulls.
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/AbstractWallBlock.scala:76:21: value getBlockState is not a member of net.minecraft.world.World | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+net.minecraft.world.World | Null could be null at runtime.
+If you want to select getBlockState without checking for a null value,
+insert a .nn before .getBlockState or import scala.language.unsafeNulls.
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/AbstractWallBlock.scala:81:21: value isClient is not a member of net.minecraft.world.World | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+net.minecraft.world.World | Null could be null at runtime.
+If you want to select isClient without checking for a null value,
+insert a .nn before .isClient or import scala.language.unsafeNulls.
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/AbstractWallBlock.scala:82:21: value getServer is not a member of net.minecraft.world.World | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+net.minecraft.world.World | Null could be null at runtime.
+If you want to select getServer without checking for a null value,
+insert a .nn before .getServer or import scala.language.unsafeNulls.
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/AbstractWallBlock.scala:85:36: value getServer is not a member of net.minecraft.world.World | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+net.minecraft.world.World | Null could be null at runtime.
+If you want to select getServer without checking for a null value,
+insert a .nn before .getServer or import scala.language.unsafeNulls.
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/AbstractWallBlock.scala:88:21: value getStackInHand is not a member of net.minecraft.entity.player.PlayerEntity | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+net.minecraft.entity.player.PlayerEntity | Null could be null at runtime.
+If you want to select getStackInHand without checking for a null value,
+insert a .nn before .getStackInHand or import scala.language.unsafeNulls.
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/AbstractWallBlock.scala:89:36: value info is not a member of org.apache.logging.log4j.Logger | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+org.apache.logging.log4j.Logger | Null could be null at runtime.
+If you want to select info without checking for a null value,
+insert a .nn before .info or import scala.language.unsafeNulls.
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/AbstractWallBlock.scala:89:72: value getDisplayName is not a member of net.minecraft.entity.player.PlayerEntity | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+net.minecraft.entity.player.PlayerEntity | Null could be null at runtime.
+If you want to select getDisplayName without checking for a null value,
+insert a .nn before .getDisplayName or import scala.language.unsafeNulls.
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/AbstractWallBlock.scala:107:4: Not found: annoation
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/AbstractWallBlock.scala:115:61: x is already defined as [33mparameter[0m [35mx[0m
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/AbstractWallBlock.scala:115:83: x is already defined as [33mparameter[0m [35mx[0m
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/MachineBlock.scala:38:15: type onwarn is not a member of annotation - did you mean annotation.nowarn?
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/MachineBlock.scala:46:48: value getItem is not a member of net.minecraft.item.ItemStack | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+net.minecraft.item.ItemStack | Null could be null at runtime.
+If you want to select getItem without checking for a null value,
+insert a .nn before .getItem or import scala.language.unsafeNulls.
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/entity/MachineBlockEntity.scala:44:19: Overloaded or recursive [33mmethod[0m [35mmachineID[0m needs return type
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/entity/MachineBlockEntity.scala:46:20: Reassignment to val machineID
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/entity/MachineBlockEntity.scala:48:15: Overloaded or recursive [33mmethod[0m [35mowner[0m needs return type
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/entity/MachineBlockEntity.scala:50:16: Reassignment to val owner
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/MachineBlock.scala:58:42: Found:    java.util.UUID[1m[31m [0m[1m[31m|[0m[1m[31m [0m[1m[31mNull[0m
+Required: java.util.UUID
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/MachineBlock.scala:59:48: value getCenterPosById is not a member of object us.dison.compactmachines.util.RoomUtil - did you mean RoomUtil.getCenterPosByID?
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/util/RoomUtil.scala:67:30: [33mmethod[0m [35mgenerateRoom[0m has a return statement; it needs a result type
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/util/RoomUtil.scala:68:28: value info is not a member of org.apache.logging.log4j.Logger | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+org.apache.logging.log4j.Logger | Null could be null at runtime.
+If you want to select info without checking for a null value,
+insert a .nn before .info or import scala.language.unsafeNulls.
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/util/RoomUtil.scala:70:5: Not found: chunkPos
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/util/RoomUtil.scala:71:37: value setChunkForces is not a member of net.minecraft.server.world.ServerWorld - did you mean ServerWorld.setChunkForced?
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/util/RoomUtil.scala:71:52: Not found: chunkPos
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/util/RoomUtil.scala:71:64: Not found: chunkPos
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/util/RoomUtil.scala:72:45: value size is not a member of us.dison.compactmachines.enums.MachineSize
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/util/RoomUtil.scala:47:34: value error is not a member of org.apache.logging.log4j.Logger | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+org.apache.logging.log4j.Logger | Null could be null at runtime.
+If you want to select error without checking for a null value,
+insert a .nn before .error or import scala.language.unsafeNulls.
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/util/RoomUtil.scala:75:67: Found:    net.minecraft.block.BlockState[1m[31m [0m[1m[31m|[0m[1m[31m [0m[1m[31mNull[0m
+Required: net.minecraft.block.BlockState
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/util/RoomUtil.scala:77:47: value getSize is not a member of us.dison.compactmachines.enums.MachineSize
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/util/RoomUtil.scala:80:13: Not found: blocks
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/util/RoomUtil.scala:55:48: Not found: pos
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/util/RoomUtil.scala:57:63: value setParentID is not a member of us.dison.compactmachines.block.entity.MachineWallBlockEntity
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/util/RoomUtil.scala:87:28: value info is not a member of org.apache.logging.log4j.Logger | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+org.apache.logging.log4j.Logger | Null could be null at runtime.
+If you want to select info without checking for a null value,
+insert a .nn before .info or import scala.language.unsafeNulls.
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/MachineBlock.scala:63:66: Found:    (machineID : Int)
+Required: net.minecraft.util.math.BlockPos
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/MachineBlock.scala:70:46: value error is not a member of org.apache.logging.log4j.Logger | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+org.apache.logging.log4j.Logger | Null could be null at runtime.
+If you want to select error without checking for a null value,
+insert a .nn before .error or import scala.language.unsafeNulls.
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/MachineBlock.scala:70:88: value asString is not a member of net.minecraft.text.Text | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+net.minecraft.text.Text | Null could be null at runtime.
+If you want to select asString without checking for a null value,
+insert a .nn before .asString or import scala.language.unsafeNulls.
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/MachineBlock.scala:70:158: Not found: id
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/MachineBlock.scala:74:38: Not found: r
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/MachineBlock.scala:75:46: value info is not a member of org.apache.logging.log4j.Logger | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+org.apache.logging.log4j.Logger | Null could be null at runtime.
+If you want to select info without checking for a null value,
+insert a .nn before .info or import scala.language.unsafeNulls.
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/MachineBlock.scala:75:99: value asString is not a member of net.minecraft.text.Text | Null.
+Since explicit-nulls is enabled, the selection is rejected because
+net.minecraft.text.Text | Null could be null at runtime.
+If you want to select asString without checking for a null value,
+insert a .nn before .asString or import scala.language.unsafeNulls.
+[Error] /home/bulby/Documents/github/compactmachines-scala/src/main/scala/us/dison/compactmachines/block/MachineBlock.scala:75:132: Not found: id
+297 errors found
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':compileScala'.
+> Compilation failed
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+
+* Get more help at https://help.gradle.org
+
+BUILD FAILED in 7s

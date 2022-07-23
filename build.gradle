@@ -1,6 +1,7 @@
 plugins {
     id 'fabric-loom' version '0.11-SNAPSHOT'
     id 'maven-publish'
+    id 'scala'
 }
 
 version = project.mod_version
@@ -25,6 +26,9 @@ dependencies {
     include modApi('teamreborn:energy:2.2.0') {
         exclude(group: "net.fabricmc.fabric-api")
     }
+    modApi("net.fabricmc:fabric-language-scala:2.0.0+scala.3.0.2") {
+	exclude group: 'net.fabricmc'
+    }
 }
 
 processResources {
@@ -47,7 +51,12 @@ tasks.withType(JavaCompile).configureEach {
         it.options.release = targetJavaVersion
     }
 }
-
+tasks.withType(ScalaCompile) {
+    scalaCompileOptions.additionalParameters = [
+    // "-Ysafe-init", 
+    // "-Yexplicit-nulls"
+    ]
+}
 java {
     def javaVersion = JavaVersion.toVersion(targetJavaVersion)
     if (JavaVersion.current() < javaVersion) {

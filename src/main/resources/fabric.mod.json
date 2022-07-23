@@ -11,10 +11,16 @@
   "environment": "*",
   "entrypoints": {
     "client": [
-      "us.dison.compactmachines.client.CompactMachinesClient"
+      { 
+        "adapter": "scala",
+        "value": "us.dison.compactmachines.client.CompactMachinesClient"
+      }
     ],
-    "main": [
-      "us.dison.compactmachines.CompactMachines"
+    "main": [ 
+      {
+        "adapter": "scala",
+        "value": "us.dison.compactmachines.CompactMachines"
+      }
     ]
   },
   "mixins": [
@@ -23,6 +29,7 @@
   "depends": {
     "fabricloader": ">=0.13.3",
     "fabric": "*",
-    "minecraft": "1.18.2"
+    "minecraft": "1.18.2",
+    "fabric-language-scala": "*"
   }
 }
