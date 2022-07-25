@@ -12,6 +12,9 @@ import us.dison.compactmachines.CompactMachines;
 import us.dison.compactmachines.block.entity.MachineWallBlockEntity;
 import us.dison.compactmachines.enums.MachineSize;
 import us.dison.compactmachines.data.persistent.RoomManager;
+import net.minecraft.server.network.ServerPlayerEntity
+import us.dison.compactmachines.block.entity.MachineBlockEntity
+import us.dison.compactmachines.data.persistent.Room
 
 object RoomUtil: 
   def getCenterPosByID(id: Int): BlockPos = 
@@ -42,7 +45,7 @@ object RoomUtil:
     val corner1 = BlockPos(box.maxX, box.maxY, box.maxZ)
     val corner2 = BlockPos(box.minX, box.minY, box.minZ) 
 
-    List(corner1, corner2).foreach(blockPos => 
+    BlockPos.iterate(corner1, corner2).forEach(blockPos => 
         if !world.canSetBlock(blockPos) then 
           CompactMachines.LOGGER.error("Can't set block! " + blockPos.toShortString())
         else 
@@ -51,10 +54,11 @@ object RoomUtil:
     val corner1 = BlockPos(box.maxX, box.maxY, box.maxZ)
     val corner2 = BlockPos(box.minX, box.minY, box.minZ)
 
-    List(corner1, corner2).foreach(blockPos => 
-        val blockEntity = world.getBlockEntity(blockPos) 
-        if blockEntity.isInstanceOf[MachineWallBlockEntity] then 
-          blockEntity.nn.asInstanceOf[MachineWallBlockEntity].setParentID(id)
+    BlockPos.iterate(corner1, corner2).forEach(blockPos => 
+        world.getBlockEntity(blockPos) match 
+          case blockEntity : MachineWallBlockEntity => 
+            blockEntity.setParentID(id)
+          case _ => ()
     )
   def getBox(centerPos : BlockPos, size: Int) = 
     val s : Int = size / 2 + 1
@@ -87,4 +91,14 @@ object RoomUtil:
       ) 
 
       CompactMachines.LOGGER.info("Done generating room #" + id.toString)
-
+  def teleportOutOfRoom(machineWorld: ServerWorld, player: ServerPlayerEntity, room: Room) : Unit = 
+    val machinePos = room.machine
+    val parentID = machineWorld.getBlockEntity(machinePos) match
+      case parent : MachineBlockEntity => 
+        parent.parentID 
+      case _ => None
+    parentID.flatMap(CompactMachines.roomManager.getRoomByNumber(_)) match 
+      case Some(parent) => 
+        player.teleport(machineWorld, parent.spawnPos.getX(), parent.spawnPos.getY(), parent.spawnPos.getZ(), 0, 0)
+      case None => 
+        player.teleport(machineWorld, machinePos.getX(), machinePos.getY(), machinePos.getZ(),0 ,0)

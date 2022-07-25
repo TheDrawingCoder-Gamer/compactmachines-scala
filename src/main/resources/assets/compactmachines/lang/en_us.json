@@ -58,7 +58,7 @@
   "item.compactmachines.machine_tiny": "Compact Machine (Tiny)",
   "item.compactmachines.personal_shrinking_device": "Personal Shrinking Device",
   "item.compactmachines.tunnels.tunnel": "Tunnel",
-  "item.compactmachines.tunnels.item": "Tunnel",
+  "item.compactmachines.tunnels.normal": "Tunnel",
   "item.compactmachines.tunnels.redstone": "Redstone Tunnel",
   "item.compactmachines.tunnels.redstone_in": "Redstone Tunnel (In)",
   "item.compactmachines.tunnels.redstone_out": "Redstone Tunnel (Out)",

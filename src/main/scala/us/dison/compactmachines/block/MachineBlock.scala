@@ -33,11 +33,11 @@ import us.dison.compactmachines.item.PSDItem;
 import us.dison.compactmachines.util.RedstoneUtil;
 import us.dison.compactmachines.util.RoomUtil;
 
-class MachineBlock(settings: AbstractBlock.Settings, val machineSize: MachineSize) extends BlockWithEntity(settings): 
+class MachineBlock(settings: AbstractBlock.Settings, val machineSize: Option[MachineSize]) extends BlockWithEntity(settings): 
   
   private var lastInsidePlayerWarning = 0
 
-  @annotation.nowarn("warn") 
+  @annotation.nowarn("deprecation") 
   override def onUse(state: BlockState, world: World, pos: BlockPos, player: PlayerEntity, hand: Hand, hit: BlockHitResult): ActionResult =
     super.onUse(state, world, pos, player, hand, hit) 
     if !world.isClient() then 
@@ -47,41 +47,44 @@ class MachineBlock(settings: AbstractBlock.Settings, val machineSize: MachineSiz
           case serverPlayer : ServerPlayerEntity =>
             serverPlayer.getStackInHand(hand).getItem() match 
               case _ : PSDItem => 
-                // hack because positioning is incorrect
-                if world == CompactMachines.cmWorld then 
-                  serverPlayer.sendMessage(TranslatableText("message.compactmachines.cannot_enter"), false) 
-                  ActionResult.PASS 
-                else 
-                  val roomManager = CompactMachines.roomManager 
-                  machineEntity.machineID match 
-                    case None => 
-                      // make new room 
-                      val machineID = RoomUtil.nextID(roomManager) 
-                      machineEntity.setMachineID(machineID) 
-                      machineEntity.setOwner(serverPlayer.getUuid) 
-                      val roomCenterPos = RoomUtil.getCenterPosByID(machineID)
-                      val spawnPos = roomCenterPos.add(0, -(machineSize.size/2d)+1, 0)
-                      roomManager.addRoom(Room(world.getRegistryKey.getValue, serverPlayer.getUuidAsString, pos, roomCenterPos, spawnPos, machineID, List(), List()))
-                      serverPlayer.sendMessage(TranslatableText("message.compactmachines.generating_room"), true) 
-                      RoomUtil.generateRoomFromId(CompactMachines.cmWorld, machineID, machineEntity.size)
-                      serverPlayer.sendMessage(TranslatableText("message.compactmachines.ready").formatted(Formatting.GREEN), true)
-                      ActionResult.SUCCESS
-                    case Some(id) => 
-                      (roomManager.getRoomByNumber(id) : Option[Room] ) match 
-                        case Some(room) => 
-                          val spawnPos = room.spawnPos 
-                          CompactMachines.LOGGER.info("Teleporting player " + player.getDisplayName().asString() + " into machine #" + id + " at: " + spawnPos.toShortString)
-                          serverPlayer.teleport(CompactMachines.cmWorld, spawnPos.getX + 0.5d, spawnPos.getY + 1d, spawnPos.getZ + 0.5d, 0, 0)
-                          roomManager.addPlayer(id, serverPlayer.getUuidAsString) 
-                          ActionResult.SUCCESS 
-                        case None => 
-                          CompactMachines.LOGGER.error("Player " + player.getDisplayName().asString() + " attempted to enter a machine with an invalid id! (#" + id.toString + ")")
-                          player.sendMessage(TranslatableText("message.compactmachines.invalid_room").formatted(Formatting.RED), false)
-                          ActionResult.PASS 
+                val roomManager = CompactMachines.roomManager
+                val cmWorld = world.getServer().getWorld(CompactMachines.CMWORLD_KEY)
+                (machineEntity.machineID, machineSize) match 
+                  case (None, Some(mSize)) => 
+                    // make new room 
+                    val machineID = RoomUtil.nextID(roomManager) 
+                    machineEntity.setMachineID(machineID) 
+                    machineEntity.setOwner(serverPlayer.getUuid) 
+                    val roomCenterPos = RoomUtil.getCenterPosByID(machineID)
+                    val spawnPos = roomCenterPos.add(0, -(mSize.size/2d)+1, 0)
+                    serverPlayer.sendMessage(TranslatableText("message.compactmachines.generating_room"), true) 
+                    machineEntity.size match 
+                      case Some(size) => 
+                        RoomUtil.generateRoomFromId(cmWorld, machineID, size)
+                        serverPlayer.sendMessage(TranslatableText("message.compactmachines.ready").formatted(Formatting.GREEN), true)
+                        roomManager.addRoom(Room(world.getRegistryKey.getValue, serverPlayer.getUuidAsString, pos, roomCenterPos, spawnPos, machineID, List(), List()))
+                        ActionResult.SUCCESS
+                      case None => 
+                        ActionResult.FAIL
+                  case (Some(id), _) => 
+                    (roomManager.getRoomByNumber(id) : Option[Room] ) match 
+                      case Some(room) => 
+                        val spawnPos = room.spawnPos 
+                        CompactMachines.LOGGER.info("Teleporting player " + player.getDisplayName().asString() + " into machine #" + id + " at: " + spawnPos.toShortString)
+                        serverPlayer.teleport(cmWorld, spawnPos.getX + 0.5d, spawnPos.getY + 1d, spawnPos.getZ + 0.5d, 0, 0)
+                        roomManager.addPlayer(id, serverPlayer.getUuid) 
+                        ActionResult.SUCCESS 
+                      case None => 
+                        CompactMachines.LOGGER.error("Player " + player.getDisplayName().asString() + " attempted to enter a machine with an invalid id! (#" + id.toString + ")")
+                        player.sendMessage(TranslatableText("message.compactmachines.invalid_room").formatted(Formatting.RED), false)
+                        ActionResult.PASS 
+                  case _ => 
+                    CompactMachines.LOGGER.warn("Room doesn't have assigned size")
+                    ActionResult.FAIL 
               case _ =>
                 ActionResult.FAIL 
       else 
-       if (world.getBlockEntity(pos).isInstanceOf[MachineBlockEntity] && world != CompactMachines.cmWorld) { 
+       if (world.getBlockEntity(pos).isInstanceOf[MachineBlockEntity] && (world.getRegistryKey() ne CompactMachines.CMWORLD_KEY)) { 
         val machineEntity = world.getBlockEntity(pos).asInstanceOf[MachineBlockEntity] 
         player match { 
           case clientPlayer : ClientPlayerEntity =>
@@ -102,8 +105,8 @@ class MachineBlock(settings: AbstractBlock.Settings, val machineSize: MachineSiz
         ActionResult.PASS
     else 
       ActionResult.PASS
-  override def createBlockEntity(pos: BlockPos, state: BlockState ): BlockEntity | Null = 
-    MachineBlockEntity(pos, state, machineSize) 
+  override def createBlockEntity(pos: BlockPos, state: BlockState ): BlockEntity = 
+    MachineBlockEntity(pos, state, machineSize, None) 
   override def onBreak(world: World, pos: BlockPos | Null, state: BlockState | Null, player: PlayerEntity | Null): Unit = 
     super.onBreak(world, pos, state, player) 
     if world.getBlockEntity(pos).isInstanceOf[MachineBlockEntity] then 
@@ -132,13 +135,20 @@ class MachineBlock(settings: AbstractBlock.Settings, val machineSize: MachineSiz
       case _ => normalStack
   override def onPlaced(world: World, pos: BlockPos, state: BlockState, placer: LivingEntity | Null, itemStack: ItemStack): Unit =
     super.onPlaced(world, pos, state, placer, itemStack) 
-    
+     
     world.getBlockEntity(pos) match 
       case blockEntity : MachineBlockEntity => 
+        if world.getRegistryKey() eq CompactMachines.CMWORLD_KEY then 
+          CompactMachines.roomManager.getRoomFromPos(pos) match 
+            case Some(room) => 
+              blockEntity.setParentID(Some(room.number))
+            case None => ()
+
         blockEntity.setOwner(placer.nn.getUuid())
         blockEntity.markDirty() 
         if !world.isClient() then 
-          blockEntity.machineID  match 
+          blockEntity.machineID  match
+            case None => ()
             case Some(id) => 
              val roomManager = CompactMachines.roomManager 
              roomManager.updateMachinePosAndOwner(id, world.getRegistryKey.getValue, pos, placer.nn.getUuidAsString)
@@ -159,25 +169,30 @@ class MachineBlock(settings: AbstractBlock.Settings, val machineSize: MachineSiz
                 if now >= lastInsidePlayerWarning + 10 then 
                   serverPlayer.sendMessage(TranslatableText("message.compactmachine.player_inside").formatted(Formatting.RED), true)
                   lastInsidePlayerWarning = now
+              case _ => ()
             0
-        
+          case _ => original 
       case _ => original
   override def emitsRedstonePower(state: BlockState | Null): Boolean = true
   override def getWeakRedstonePower(state: BlockState | Null, world: BlockView | Null, pos: BlockPos, direction: Direction | Null): Int = 
     val tunnel = getTunnelOf(pos, world, Option(direction), TunnelType.Redstone) 
-    tunnel match { 
-      case Some(t) => 
-        CompactMachines.cmWorld.getBlockEntity(pos) match {
-          case null => 0
-          case tunnelEntity : TunnelWallBlockEntity =>
-            if tunnelEntity.outgoing then 
-              0 
-            else 
-              RedstoneUtil.getPower(CompactMachines.cmWorld, t.pos) 
+    world.getBlockEntity(pos).getWorld().getServer() match 
+      case null => 0 
+      case server => 
+        tunnel match { 
+          case Some(t) =>
+            val cmWorld = server.getWorld(CompactMachines.CMWORLD_KEY)
+            cmWorld.getBlockEntity(pos) match {
+              case null => 0
+              case tunnelEntity : TunnelWallBlockEntity =>
+                if tunnelEntity.outgoing then 
+                  0 
+                else 
+                  RedstoneUtil.getPower(cmWorld, t.pos) 
+            }
+          case None => 
+            0
         }
-      case None => 
-        0
-    }
               
   private def getTunnelOf(pos: BlockPos, world: BlockView, direction: Option[Direction], tunnelType: TunnelType): Option[Tunnel] = 
     val roomManager = CompactMachines.roomManager 

@@ -36,64 +36,11 @@ import us.dison.compactmachines.item.TunnelItem;
 import us.dison.compactmachines.util.TunnelUtil;
 import net.minecraft.loot.context.LootContext.Builder
 import java.{util => ju}
+import us.dison.compactmachines.util.RoomUtil
 
 abstract class AbstractWallBlock(settings: AbstractBlock.Settings, private val breakable: Boolean) extends BlockWithEntity(settings): 
-  @annotation.nowarn("deprecation")
-  override def onUse(state:BlockState | Null, world: World | Null, pos:BlockPos | Null, player:PlayerEntity | Null, hand:Hand | Null, hit:BlockHitResult | Null): ActionResult | Null =
-    val s = super.onUse(state, world, pos, player, hand, hit)
-    
-    if world != CompactMachines.cmWorld then 
-      ActionResult.FAIL 
-    else 
-      world.getBlockEntity(pos).nn match 
-        case _ : TunnelWallBlockEntity => ActionResult.FAIL 
-        case wall : MachineWallBlockEntity => 
-          val roomManager = CompactMachines.roomManager 
-          roomManager.getRoomByNumber(wall.parentID.getOrElse(-1)) match 
-            case None => ActionResult.FAIL
-            case Some(room) =>
-              player.getStackInHand(hand).nn.getItem().nn match 
-                case _ : TunnelItem => 
-                  val stackNbt = player.getStackInHand(hand).getNbt()
-                  TunnelUtil.typeFromNbt(stackNbt) match 
-                    case Some(tunnelType) =>
-                      world.breakBlock(pos, false) 
-                      world.setBlockState(pos, 
-                        CompactMachines.BLOCK_WALL_TUNNEL.getDefaultState,
-                        Block.NOTIFY_ALL | Block.FORCE_STATE
-                      )
-                      world.getBlockEntity(pos) match 
-                        case tunnelEntity : TunnelWallBlockEntity => 
-                          val tunnel = Tunnel(wall.getPos(), TunnelDirection.NoDir, tunnelType, false, false, false, false)
-                          roomManager.addTunnel(room.number, tunnel)
-                          wall.parentID match 
-                            case Some(id) => 
-                              tunnelEntity.setParentID(id)
-                          tunnelEntity.setTunnelType(tunnelType) 
-                          tunnelEntity.setConnectedToItem(false) 
-                          tunnelEntity.setConnectedToFluid(false) 
-                          tunnelEntity.setConnectedToEnergy(false) 
-                          world.setBlockState(pos, world.getBlockState(pos),
-                            Block.NOTIFY_ALL | Block.FORCE_STATE)
-                          world.nn.getBlockState(pos).getBlock().nn match 
-                            case tunnelWall : TunnelWallBlock => 
-                              tunnelWall.setTunnel(tunnel) 
-                case _ => 
-
-                  if (world.isClient) return ActionResult.SUCCESS 
-                  if (world.getServer() == null) return ActionResult.FAIL 
-
-                  val serverPlayer = player.asInstanceOf[ServerPlayerEntity] 
-                  val machineWorld = world.getServer().getWorld(RegistryKey.of(Registry.WORLD_KEY, room.world));
-                  val machinePos = room.machine
-
-                  if player.getStackInHand(hand).nn.getItem().isInstanceOf[PSDItem] then 
-                    CompactMachines.LOGGER.info("Teleporting player " + player.getDisplayName.asString + "out of machine #" + room.number.toString + " at: " + room.center.toShortString)
-                    serverPlayer.teleport(machineWorld, machinePos.getX(), machinePos.getY(), machinePos.getZ(), 0, 0)
-                    roomManager.rmPlayer(room.number, serverPlayer.getUuidAsString)
-                    return ActionResult.SUCCESS
-      s
-  @annotation.nowarn("deprecation") 
+  
+  @annotation.nowarn("cat=deprecation") 
   override def calcBlockBreakingDelta(state: BlockState | Null, player: PlayerEntity | Null, world: BlockView | Null, pos: BlockPos | Null): Float = 
     if this.breakable then 
       super.calcBlockBreakingDelta(state, player, world, pos)
@@ -105,7 +52,7 @@ abstract class AbstractWallBlock(settings: AbstractBlock.Settings, private val b
   override def getBlastResistance(): Float = 
     if this.breakable then super.getBlastResistance() else 3600000
 
-  @annotation.nowarn("deprecation") 
+  @annotation.nowarn("cat=deprecation") 
   override def getDroppedStacks(state: BlockState | Null, builder: Builder | Null): ju.List[ItemStack] | Null = 
     if this.breakable then 
       super.getDroppedStacks(state, builder)

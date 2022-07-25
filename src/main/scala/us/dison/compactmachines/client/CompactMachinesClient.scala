@@ -35,7 +35,8 @@ object CompactMachinesClient extends ClientModInitializer:
       if (Registry.ITEM.nn.getId(stack.nn.getItem()).toString().startsWith(MODID + ":machine_")) { // Machine number tooltip
         val pathParts = Registry.ITEM.nn.getId(stack.nn.getItem()).getPath().nn.split("_")  
         if pathParts.length > 2 then 
-          MachineSize.getFromSize(pathParts(1)) match 
+          MachineSize.getFromSize(pathParts(1)) match
+            
             case Some(machineSize) => 
               lines.add(1, TranslatableText("tooltip.compactmachines.machine.size", machineSize.size, machineSize.size, machineSize.size).formatted(Formatting.GRAY)) 
               if (stack.getNbt() != null) {
@@ -51,7 +52,7 @@ object CompactMachinesClient extends ClientModInitializer:
                 if (context.isAdvanced()) lines.add(1, TranslatableText("tooltip.compactmachines.machine.owner", playerName).formatted(Formatting.GRAY));
                 lines.add(1, TranslatableText("tooltip.compactmachines.machine.id", stack.getSubNbt("BlockEntityTag").getInt("number")).formatted(Formatting.GRAY));
               }
-
+            case _ => ()
             } else
             if (Registry.ITEM.getId(stack.getItem()).equals(ID_WALL_UNBREAKABLE)) { // Unbreakable wall tooltip
                 lines.add(1, TranslatableText("tooltip.compactmachines.details.solid_wall").formatted(Formatting.RED));
@@ -81,27 +82,24 @@ object CompactMachinesClient extends ClientModInitializer:
 
         // Make Tunnel Wall Blocks have transparent render layers
         BlockRenderLayerMap.INSTANCE.putBlock(CompactMachines.BLOCK_WALL_TUNNEL, RenderLayer.getCutout());
-
         // Tint Tunnel Wall Blocks
-        ColorProviderRegistry.BLOCK.register((state, world, pos, tintIndex) => 
+        ColorProviderRegistry.BLOCK.register((state, world, pos, tintIndex) =>
+            CompactMachines.LOGGER.info("coloring tunnel")
             world.getBlockEntity(pos) match {
                 case tunnelWall : TunnelWallBlockEntity => 
                     val ra = tunnelWall.getRenderAttachmentData().asInstanceOf[TunnelRenderAttachmentData]
-                    var daType = ra.tunnelType 
-                    CompactMachines.BLOCK_WALL_TUNNEL.tunnel match { 
-
-                        case Some(tunnel) if daType.isEmpty => 
-                            daType = Some(tunnel.tunnelType)
-                        case None => 
-                            0xff00ff 
-                    }
+                    var daType = ra.tunnelType.orElse(CompactMachines.BLOCK_WALL_TUNNEL.tunnel.map(_.tunnelType)) 
                     val isConnected = ra.isConnected;
                     tintIndex match {
                         case 0 => daType match { case None => 0xff00ff case Some(t) => t.color }
-                        case 1 => if daType == TunnelType.Redstone then (if tunnelWall.outgoing then 0xeb3434 else 0x34eb6e) else (if isConnected then 0xaaaabb else 0x222233)
+                        case 1 => daType match { 
+                            case None => 0xff00ff 
+                            case Some(TunnelType.Redstone) => if tunnelWall.outgoing then 0xeb3434 else 0x34eb6e 
+                            case Some(TunnelType.Normal) => (if isConnected then 0xaaaabb else 0x222233)
+                        }
                         case _ => 0xff00ff
                     }
-
+                case _ => 0xff00ff
             }
 
         , BLOCK_WALL_TUNNEL);

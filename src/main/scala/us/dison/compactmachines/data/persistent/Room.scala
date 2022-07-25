@@ -8,13 +8,15 @@ import us.dison.compactmachines.data.persistent.tunnel.Tunnel
 import scala.jdk.CollectionConverters._
 import us.dison.compactmachines.util.ScalaListCodec
 import us.dison.compactmachines.util.codecs.*
+import java.util.UUID
+import net.minecraft.util.dynamic.DynamicSerializableUuid
 case class Room(world: Identifier,
                 owner: String,
                 machine: BlockPos, 
                 center: BlockPos,
                 spawnPos: BlockPos,
                 number: Int,
-                players: List[String],
+                players: List[UUID],
                 tunnels: List[Tunnel])
 
 object Room: 
@@ -26,7 +28,7 @@ object Room:
         BlockPos.CODEC.fieldOf("center").forGetter((room: Room) => room.center),
         BlockPos.CODEC.fieldOf("spawnPos").forGetter((room: Room) => room.spawnPos),
         ScalaIntCodec.fieldOf("number").forGetter((room: Room) => room.number),
-        ScalaListCodec(Codec.STRING).fieldOf("players").forGetter((room: Room) => room.players),
+        ScalaListCodec(DynamicSerializableUuid.CODEC).fieldOf("players").forGetter((room: Room) => room.players),
         ScalaListCodec(Tunnel.CODEC).fieldOf("tunnels").forGetter((room: Room) => room.tunnels)
         ).apply(instance, Room.apply))
   

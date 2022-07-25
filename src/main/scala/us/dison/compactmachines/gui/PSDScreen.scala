@@ -27,7 +27,7 @@ class PSDScreen(title: Text) extends Screen(title):
     this.drawTexture(matrices, j, k, 0, 0, 256, 256);
     textRenderer.nn.drawWithShadow(matrices,
       TranslatableText(CompactMachines.MODID + ".psd.pages.machines.title"),
-      j+17, k+16, Formatting.GOLD.getColorValue) 
+      j.toFloat+17, k.toFloat+16, Formatting.GOLD.getColorValue) 
     
     val text = MultilineText.create(textRenderer.nn, TranslatableText(CompactMachines.MODID + ".psd.pages.machines"), 222) 
     

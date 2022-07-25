@@ -31,6 +31,7 @@ import us.dison.compactmachines.data.persistent.tunnel.Tunnel;
 import us.dison.compactmachines.data.persistent.tunnel.TunnelType;
 import us.dison.compactmachines.util.TunnelUtil;
 import us.dison.compactmachines.block.entity.AbstractWallBlockEntity
+import us.dison.compactmachines.util.RoomUtil
 
 class TunnelWallBlockEntity(pos: BlockPos, state: BlockState) extends AbstractWallBlockEntity(CompactMachines.TUNNEL_WALL_BLOCK_ENTITY: @unchecked, pos, state), RenderAttachmentBlockEntity:
   private var tunnelTypeVar : Option[TunnelType] = Option.empty
@@ -73,20 +74,23 @@ class TunnelWallBlockEntity(pos: BlockPos, state: BlockState) extends AbstractWa
           case (Some(room), Some(tunnel)) => 
             CompactMachines.roomManager.updateTunnel(room.number, tunnel.copy(connectedToFluid = connected))
             markDirty()
+          case _ => ()
   def connectedToItem = connectedToItemVar
   def setConnectedToItem(connected:Boolean) = 
       connectedToItemVar = connected
       (this.room, this.tunnel) match 
         case (Some(room), Some(tunnel)) =>
           CompactMachines.roomManager.updateTunnel(room.number, tunnel.copy(connectedToItem = connected))
-          markDirty() 
+          markDirty()
+        case _ => ()
   def connectedToEnergy = connectedToEnergyVar
   def setConnectedToEnergy(connected:Boolean) = 
       connectedToEnergyVar = connected 
       (this.room, this.tunnel) match 
         case (Some(room), Some(tunnel)) =>
           CompactMachines.roomManager.updateTunnel(room.number, tunnel.copy(connectedToEnergy = connected))
-          markDirty() 
+          markDirty()
+        case _ => () 
   def outgoing = outgoingVar
   def setOutgoing(outgoing: Boolean): Unit = 
     this.outgoingVar = outgoing 
@@ -96,10 +100,22 @@ class TunnelWallBlockEntity(pos: BlockPos, state: BlockState) extends AbstractWa
         markDirty() 
         // redraw this, nerd
         this.world.updateListeners(this.getPos(), this.getCachedState(), this.getCachedState(), Block.NOTIFY_ALL | Block.FORCE_STATE)
+      case _ => ()
   def room : Option[Room] = 
-    CompactMachines.roomManager.getRoomByNumber(parentID.getOrElse(-1))
+    parentID.flatMap(CompactMachines.roomManager.getRoomByNumber(_))
   def tunnel : Option[Tunnel] = 
     this.room.map(TunnelUtil.fromRoomAndPos(_, this.getPos())).flatten
+  def setTunnel(tunnel: Tunnel): Unit = 
+    parentID.foreach(id =>
+      CompactMachines.LOGGER.info("updating tunnel")
+      CompactMachines.roomManager.updateTunnel(id, tunnel)
+      this.tunnelTypeVar = Some(tunnel.tunnelType)
+      this.outgoingVar = tunnel.outgoing
+      this.connectedToEnergyVar = tunnel.connectedToEnergy
+      this.connectedToItemVar = tunnel.connectedToItem
+      this.connectedToFluidVar = tunnel.connectedToFluid
+      markDirty()
+    )
   private def externalHelper[T](lookup: (World, BlockPos, Direction) =>  T): Option[T] = 
     tunnelType match 
       case Some(TunnelType.Normal) =>
@@ -140,6 +156,7 @@ class TunnelWallBlockEntity(pos: BlockPos, state: BlockState) extends AbstractWa
             CompactMachines.LOGGER.error(ignored) 
             None
         }
+      case _ => None
   def extItemTarget : Option[Storage[ItemVariant]] = 
     externalHelper(ItemStorage.SIDED.find)
   def intlItemTarget : Option[Storage[ItemVariant]] =

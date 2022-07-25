@@ -15,8 +15,10 @@ class TunnelItem(settings: Settings, val tunnelType : Option[TunnelType]) extend
   override def getDefaultStack(): ItemStack | Null = 
     val s = super.getDefaultStack() 
     tunnelType match 
-      case Some(t) => s.setSubNbt("type", NbtString.of(t.name))
-    s
+      case Some(t) => 
+        s.setSubNbt("type", NbtString.of(t.tunnelName))
+        s
+      case _ => s
   override def getName(stack: ItemStack): Text = 
     lazy val defName = TranslatableText("item.compactmachines.tunnels.tunnel")
     stack.getNbt match 
@@ -25,5 +27,5 @@ class TunnelItem(settings: Settings, val tunnelType : Option[TunnelType]) extend
         stackNbt.get("type") match 
           case null => defName 
           case typeNbt => 
-            TunnelType.byName(typeNbt.asString()).map((tt: TunnelType) => TranslatableText("item.compactmachines.tunnels.${tt.name}")).getOrElse(defName)
+            TunnelType.byName(typeNbt.asString()).map((tt: TunnelType) => TranslatableText(s"item.compactmachines.tunnels.${tt.tunnelName}")).getOrElse(defName)
     

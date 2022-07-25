@@ -3,7 +3,7 @@ package us.dison.compactmachines.data.persistent.tunnel
 import com.mojang.serialization.Codec
 import net.minecraft.util.StringIdentifiable 
 
-enum TunnelType(val tunnelName: String, val id: Int, val color: Int) extends java.lang.Enum[TunnelType], StringIdentifiable:
+enum TunnelType(val tunnelName: String, val id: Int, val color: Int) extends  java.lang.Enum[TunnelType], StringIdentifiable:
   case Normal extends TunnelType("normal", 0, 0xf5aa42) 
   case Redstone extends TunnelType("redstone", 1, 0xaa1111)
 

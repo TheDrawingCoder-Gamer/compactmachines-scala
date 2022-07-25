@@ -36,7 +36,9 @@ import us.dison.compactmachines.util.TunnelUtil;
 import us.dison.compactmachines.util.HitUtil;
 import net.minecraft.block.BlockWithEntity
 
-class TunnelWallBlock(settings: net.minecraft.block.AbstractBlock.Settings, breakable: Boolean) extends AbstractWallBlock(settings, breakable): 
+class TunnelWallBlock(settings: net.minecraft.block.AbstractBlock.Settings, breakable: Boolean) extends AbstractWallBlock(settings, breakable):
+    setDefaultState(getStateManager().getDefaultState().`with`(TunnelWallBlock.CONNECTED_SIDE, TunnelDirection.NoDir))
+
     private var tunnelVar: Option[Tunnel] = Option.empty 
     override def neighborUpdate(state: BlockState, world: World, pos: BlockPos, block: Block, fromPos: BlockPos, notify: Boolean): Unit = 
       if (block.equals(this)) then 
@@ -92,9 +94,10 @@ class TunnelWallBlock(settings: net.minecraft.block.AbstractBlock.Settings, brea
             if world.isClient() then 
               ActionResult.SUCCESS 
             else 
-              if world == CompactMachines.cmWorld then 
+              if world.getRegistryKey eq CompactMachines.CMWORLD_KEY then 
                 val roomManager = CompactMachines.roomManager 
-                roomManager.getRoomByNumber(wall.parentID.getOrElse(-1)) match 
+                wall.parentID.flatMap(roomManager.getRoomByNumber(_)) match
+                  case None => ActionResult.PASS
                   case Some(room) => 
                     world.setBlockState(pos, CompactMachines.BLOCK_WALL_UNBREAKABLE.getDefaultState())
                     // wall.setParentID(wall.parentID) // wtf is this 
@@ -131,7 +134,7 @@ class TunnelWallBlock(settings: net.minecraft.block.AbstractBlock.Settings, brea
                                     block.setTunnel(newTunnel) // what 
                                     roomManager.updateTunnel(room.number, newTunnel)
                                     player.sendMessage(TranslatableText("compactmachines.direction.side", 
-                                      TranslatableText("compactmachines.direction." + nextSide.name.toLowerCase())), true)
+                                      TranslatableText("compactmachines.direction." + nextSide.direction.toLowerCase())), true)
                                     ActionResult.SUCCESS 
                                   case _ => 
                                     ActionResult.SUCCESS

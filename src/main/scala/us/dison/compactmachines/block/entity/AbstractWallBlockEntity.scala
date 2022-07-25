@@ -21,7 +21,9 @@ abstract class AbstractWallBlockEntity(blockEntityType: BlockEntityType[_], pos:
 
   def parentID : Option[Int] = parentID_
 
-  def setParentID(parentID: Int) = 
+  def setParentID(parentID: Int) =
+    // "not a member"
+    // IT IS THO
     parentID_ = Some(parentID)
     markDirty()
 

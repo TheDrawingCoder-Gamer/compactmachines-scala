@@ -15,6 +15,8 @@ import java.util.Collections
 import scala.collection.mutable.{ListBuffer, Buffer}
 import scala.jdk.CollectionConverters._
 import us.dison.compactmachines.CompactMachines
+import us.dison.compactmachines.util.RoomUtil
+import java.util.UUID
 object RoomManager: 
   private val CODEC: Codec[java.util.List[Room]] = Codec.list(Room.CODEC)
   private val KEY = "compactmachines_rooms"
@@ -43,7 +45,6 @@ class RoomManager extends PersistentState:
   def onServerWorldTick(world: ServerWorld): Unit = {}
   def addRoom(room: Room): Unit = 
     require(!existsRoomByNumber(room.number), "Room already exists with number: " + room.number.toString)
-    require(!existsRoomByMachine(room.machine), "Room already exists for machine: " + room.machine.toShortString + "; number: " + room.number.toString)
     rooms.addOne(room)
     
     markDirty()
@@ -55,6 +56,7 @@ class RoomManager extends PersistentState:
         rooms.subtractOne(oldRoom)
         rooms.addOne(newRoom)
         markDirty()
+      case None => ()
 
   def updateMachinePos(id: Int, world: Identifier, machine: BlockPos) = 
     getRoomByNumber(id) match 
@@ -63,6 +65,7 @@ class RoomManager extends PersistentState:
         rooms.subtractOne(oldRoom)
         rooms.addOne(newRoom)
         markDirty()
+      case None => ()
 
   def updateMachinePosAndOwner(id: Int, world: Identifier, machine: BlockPos, uuid: String) = 
     getRoomByNumber(id)  match 
@@ -71,35 +74,41 @@ class RoomManager extends PersistentState:
         rooms.subtractOne(oldRoom)
         rooms.addOne(newRoom)
         markDirty()
+      case None => 
+        ()
   def updateSpawnPos(id : Int, pos: BlockPos): Unit = 
     getRoomByNumber(id) match 
       case Some(oldRoom) =>
         val newRoom = oldRoom.copy(spawnPos = pos)
         rooms.subtractOne(oldRoom)
         rooms.addOne(newRoom)
-  def rmPlayer(id: Int, player: String) = 
+      case None => ()
+  def rmPlayer(id: Int, player: UUID) = 
     getRoomByNumber(id) match {
       case Some(oldRoom) => 
         if !oldRoom.players.contains(player) then 
           CompactMachines.LOGGER.warn("tried to remove player from room, but they aren't in it")
         else 
           updatePlayers(id, oldRoom.players.filterNot(_ == player))
+      case None => ()
     }
-  def addPlayer(id: Int, player: String): Unit = 
+  def addPlayer(id: Int, player: UUID): Unit = 
     getRoomByNumber(id) match {
       case Some(oldRoom) => 
         if oldRoom.players.contains(player) then 
           CompactMachines.LOGGER.warn("tried to put player in room, but they were already in it")
         else 
           updatePlayers(id, oldRoom.players.appended(player))
+      case None => ()
     }
-  def updatePlayers(id: Int, players: IterableOnce[String]): Unit =
+  def updatePlayers(id: Int, players: IterableOnce[UUID]): Unit =
     getRoomByNumber(id) match 
       case Some(oldRoom) => 
         val playerList = List.from(players)
         val newRoom = oldRoom.copy(players = playerList)
         rooms.subtractOne(oldRoom) 
         rooms.addOne(newRoom)
+      case None => ()
   
   def updateTunnels(id: Int, tunnels: IterableOnce[Tunnel]): Unit = 
     getRoomByNumber(id) match 
@@ -108,6 +117,7 @@ class RoomManager extends PersistentState:
         rooms.subtractOne(oldRoom)
         rooms.addOne(newRoom)
         markDirty()
+      case None => ()
   def rmTunnel(id: Int, tunnel: Tunnel): Unit = 
     val oldRoom = getRoomByNumber(id)
     if oldRoom.isEmpty then return 
@@ -118,6 +128,7 @@ class RoomManager extends PersistentState:
     updateTunnels(id, oldRoom.get.tunnels.appended(tunnel))
   def updateTunnel(id: Int, tunnel: Tunnel) : Unit = 
     (getRoomByNumber(id) : Option[Room]) match 
+      case None => ()
       case Some(oldRoom) => 
         val tunnels = oldRoom.tunnels 
         if tunnels.size < 1 then 
@@ -128,14 +139,16 @@ class RoomManager extends PersistentState:
           targetTunnel match 
             case Some(newTunnel) => 
               updateTunnels(id,tunnels.filter(_ != tunnel).appended(newTunnel))
+            case None => ()
   def getRoomByNumber(id: Int):Option[Room] =
    rooms.find(_.number == id)
 
-  def getRoomByMachine(machine: BlockPos):Option[Room] = 
-    rooms.find(_.machine == machine)
-
+  def getRoomFromPos(pos: BlockPos):Option[Room] = 
+    rooms.find(room => 
+          val box = RoomUtil.getBox(RoomUtil.getCenterPosByID(room.number), 13)
+          box.contains(pos.getX(), pos.getY(), pos.getZ())
+          
+        )
   def existsRoomByNumber(id:Int):Boolean = 
     rooms.exists(_.number == id) 
 
-  def existsRoomByMachine(machine:BlockPos):Boolean = 
-    rooms.exists(_.machine == machine)

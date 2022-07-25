@@ -60,6 +60,8 @@ object CompactMachines extends ModInitializer:
   private val CMBIOME = createCMBiome() 
   val CMBIOME_KEY = RegistryKey.of(Registry.BIOME_KEY, Identifier(MODID, "compactmachines")).nn
 
+  // World key 
+  val CMWORLD_KEY = RegistryKey.of(Registry.WORLD_KEY, Identifier(MODID, "compactmachinesdim")).nn 
   // Item/Block ID's 
   val ID_TINY = Identifier(MODID, "machine_tiny")
   val ID_SMALL = Identifier(MODID, "machine_small") 
@@ -78,12 +80,12 @@ object CompactMachines extends ModInitializer:
   val SETTINGS_BLOCK_WALL = FabricBlockSettings.of(Material.METAL).nn.strength(4.0f).nn.requiresTool();
 
   // Block 
-  val BLOCK_MACHINE_TINY = MachineBlock(SETTINGS_BLOCK_MACHINE, MachineSize.Tiny)
-  val BLOCK_MACHINE_SMALL = MachineBlock(SETTINGS_BLOCK_MACHINE, MachineSize.Small)
-  val BLOCK_MACHINE_NORMAL = MachineBlock(SETTINGS_BLOCK_MACHINE, MachineSize.Normal)
-  val BLOCK_MACHINE_LARGE = MachineBlock(SETTINGS_BLOCK_MACHINE, MachineSize.Large)
-  val BLOCK_MACHINE_GIANT = MachineBlock(SETTINGS_BLOCK_MACHINE, MachineSize.Giant)
-  val BLOCK_MACHINE_MAXIMUM = MachineBlock(SETTINGS_BLOCK_MACHINE, MachineSize.Maximum)
+  val BLOCK_MACHINE_TINY = MachineBlock(SETTINGS_BLOCK_MACHINE, Some(MachineSize.Tiny))
+  val BLOCK_MACHINE_SMALL = MachineBlock(SETTINGS_BLOCK_MACHINE, Some(MachineSize.Small))
+  val BLOCK_MACHINE_NORMAL = MachineBlock(SETTINGS_BLOCK_MACHINE, Some(MachineSize.Normal))
+  val BLOCK_MACHINE_LARGE = MachineBlock(SETTINGS_BLOCK_MACHINE, Some(MachineSize.Large))
+  val BLOCK_MACHINE_GIANT = MachineBlock(SETTINGS_BLOCK_MACHINE, Some(MachineSize.Giant))
+  val BLOCK_MACHINE_MAXIMUM = MachineBlock(SETTINGS_BLOCK_MACHINE, Some(MachineSize.Maximum))
   val BLOCK_WALL_UNBREAKABLE = MachineWallBlock(SETTINGS_BLOCK_WALL, false) 
   val BLOCK_WALL = MachineWallBlock(SETTINGS_BLOCK_WALL, true) 
   val BLOCK_WALL_TUNNEL = TunnelWallBlock(SETTINGS_BLOCK_WALL, false) 
@@ -127,7 +129,7 @@ object CompactMachines extends ModInitializer:
           ()
   ).build()
   lazy val MACHINE_BLOCK_ENTITY : BlockEntityType[MachineBlockEntity] = Registry.register(Registry.BLOCK_ENTITY_TYPE, MODID + ":machine_block_entity", FabricBlockEntityTypeBuilder.create( 
-    (a: BlockPos | Null, b: BlockState | Null) => MachineBlockEntity(a.nn, b.nn, null) : @unchecked, 
+    (a: BlockPos | Null, b: BlockState | Null) => MachineBlockEntity(a.nn, b.nn, None, None), 
     BLOCK_MACHINE_TINY, 
     BLOCK_MACHINE_SMALL, 
     BLOCK_MACHINE_NORMAL,
@@ -137,82 +139,56 @@ object CompactMachines extends ModInitializer:
   lazy val TUNNEL_WALL_BLOCK_ENTITY : BlockEntityType[TunnelWallBlockEntity] = Registry.register(Registry.BLOCK_ENTITY_TYPE, MODID + ":tunnel_wall_block_entity", FabricBlockEntityTypeBuilder.create(TunnelWallBlockEntity.apply(_, _), BLOCK_WALL_TUNNEL).build(null)).nn 
   lazy val MACHINE_WALL_BLOCK_ENTITY : BlockEntityType[MachineWallBlockEntity] = Registry.register(Registry.BLOCK_ENTITY_TYPE, MODID + ":machine_wall_block_entity", FabricBlockEntityTypeBuilder.create(MachineWallBlockEntity.apply(_, _), BLOCK_WALL_UNBREAKABLE).build(null)).nn
   private var roomManagerVar : Option[RoomManager] = Option.empty
-  private var cmWorldVar : Option[ServerWorld] = Option.empty 
   // safe, it shouldn't be accessed before server spins up 
   def roomManager = roomManagerVar.get 
-  def cmWorld = cmWorldVar.get
 
   override def onInitialize(): Unit = 
     ServerWorldEvents.LOAD.register((server, world) => 
-        if world.equals(cmWorldVar) then 
-          roomManager.onServerWorldLoad(cmWorld) 
+        if world.getRegistryKey().equals(CMWORLD_KEY)  && roomManagerVar.isDefined then 
+          roomManager.onServerWorldLoad(world) 
     )
     ServerTickEvents.START_WORLD_TICK.register(world =>
-        if world.equals(cmWorldVar) then 
-          roomManager.onServerWorldTick(cmWorld)
+        if world.getRegistryKey().equals(CMWORLD_KEY) && roomManagerVar.isDefined then  
+          roomManager.onServerWorldTick(world)
     )
-    ServerLifecycleEvents.SERVER_STARTED.register(server => 
-        cmWorldVar = Some(server.getWorld(RegistryKey.of(Registry.WORLD_KEY, Identifier(MODID, "compactmachinesdim"))))
-        roomManagerVar = Some(RoomManager.get(cmWorld))
+    ServerLifecycleEvents.SERVER_STARTED.register(server =>
+        val world = server.getWorld(CMWORLD_KEY) 
+        if world == null then 
+          LOGGER.warn("couldn't start room manager") 
+        else 
+          roomManagerVar = Some(RoomManager.get(world))
     )
     
     Registry.register(BuiltinRegistries.BIOME, CMBIOME_KEY.getValue(), CMBIOME)
-    
+   
+    MACHINE_BLOCK_ENTITY 
+    MACHINE_WALL_BLOCK_ENTITY
+    TUNNEL_WALL_BLOCK_ENTITY
+    def internalHelper[T](connectedSetter: (TunnelWallBlockEntity, Boolean) => Unit, targetGetter: TunnelWallBlockEntity => Option[T], machineEntity : MachineBlockEntity, direction: Direction | Null):T | Null  = 
+      machineEntity.machineID.flatMap(roomManager.getRoomByNumber(_)).flatMap(room => 
+        room.tunnels.filter(t => t.tunnelType == TunnelType.Normal && t.face.toDirection() == direction).collectFirst(scala.Function.unlift(tunnel =>
+          machineEntity.getWorld().nn.getBlockEntity(tunnel.pos) match 
+            case wall : TunnelWallBlockEntity => 
+              connectedSetter(wall, false) 
+              targetGetter(wall) match 
+                case Some(intlTarget) => 
+                  connectedSetter(wall, true) 
+                  Some(intlTarget)
+                case None => None 
+            case _ => None
+            ))
+      ).orNull
     ItemStorage.SIDED.registerForBlockEntity[MachineBlockEntity](
       (machineEntity, direction) => 
-        roomManager.getRoomByNumber(machineEntity.machineID.getOrElse(-1)) match 
-          case None => null 
-          case Some(room) => 
-            for tunnel <- room.tunnels.filter(t => t.tunnelType == TunnelType.Normal && t.face.toDirection() == direction) do 
-              cmWorld.getBlockEntity(tunnel.pos) match 
-                case wall : TunnelWallBlockEntity => 
-                  wall.setConnectedToItem(false) 
-                  wall.intlItemTarget match 
-                    case Some(intlTarget) =>
-                      wall.setConnectedToItem(true) 
-                      return intlTarget 
-                      ()
-                    case None => 
-                      ()
-                case _ => () 
-            null
-
+        internalHelper(_.setConnectedToItem(_), _.intlItemTarget, machineEntity, direction)
     , MACHINE_BLOCK_ENTITY)
     FluidStorage.SIDED.registerForBlockEntity[MachineBlockEntity](
       (machineEntity, direction) => 
-        roomManager.getRoomByNumber(machineEntity.machineID.getOrElse(-1)) match 
-          case None => null 
-          case Some(room) => 
-            for tunnel <- room.tunnels.filter(t => t.tunnelType == TunnelType.Normal && t.face.toDirection() == direction) do 
-              cmWorld.getBlockEntity(tunnel.pos) match 
-                case wall : TunnelWallBlockEntity => 
-                  wall.setConnectedToFluid(false) 
-                  wall.intlFluidTarget match 
-                    case Some(intlTarget) =>
-                      wall.setConnectedToFluid(true) 
-                      return intlTarget 
-                    case None => 
-                      null 
-                case _ => null
-        null
+        internalHelper(_.setConnectedToFluid(_), _.intlFluidTarget, machineEntity, direction)
     , MACHINE_BLOCK_ENTITY)
     EnergyStorage.SIDED.registerForBlockEntity[MachineBlockEntity](
       (machineEntity, direction) => 
-        roomManager.getRoomByNumber(machineEntity.machineID.getOrElse(-1)) match 
-          case None => null 
-          case Some(room) => 
-            for tunnel <- room.tunnels.filter((t) => t.tunnelType == TunnelType.Normal && t.face.toDirection() == direction) do 
-              cmWorld.getBlockEntity(tunnel.pos) match 
-                case wall : TunnelWallBlockEntity => 
-                  wall.setConnectedToEnergy(false) 
-                  wall.intlEnergyTarget match 
-                    case Some(intlTarget) =>
-                      wall.setConnectedToEnergy(true) 
-                      return intlTarget 
-                    case None => 
-                      null 
-                case _ => null
-        null
+        internalHelper(_.setConnectedToEnergy(_), _.intlEnergyTarget, machineEntity, direction)
     , MACHINE_BLOCK_ENTITY)
     ItemStorage.SIDED.registerForBlockEntity[TunnelWallBlockEntity](
       (wall, direction) => 
@@ -224,7 +200,7 @@ object CompactMachines extends ModInitializer:
       , TUNNEL_WALL_BLOCK_ENTITY)
     EnergyStorage.SIDED.registerForBlockEntity[TunnelWallBlockEntity](
       (wall, direction) => 
-        wall.asInstanceOf[TunnelWallBlockEntity].extEnergyTarget.orNull 
+        wall.extEnergyTarget.orNull 
       , TUNNEL_WALL_BLOCK_ENTITY)
     Registry.register(Registry.BLOCK, ID_TINY, BLOCK_MACHINE_TINY)
     Registry.register(Registry.BLOCK, ID_SMALL, BLOCK_MACHINE_SMALL)
