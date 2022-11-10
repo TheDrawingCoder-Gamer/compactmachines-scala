@@ -16,8 +16,8 @@ case class Room(world: Identifier,
                 center: BlockPos,
                 spawnPos: BlockPos,
                 number: Int,
-                players: List[UUID],
-                tunnels: List[Tunnel])
+                players: List[String],
+                tunnels: List[Tunnel]) derives CanEqual
 
 object Room: 
   val CODEC : Codec[Room] = RecordCodecBuilder.create(instance => 
@@ -28,7 +28,7 @@ object Room:
         BlockPos.CODEC.fieldOf("center").forGetter((room: Room) => room.center),
         BlockPos.CODEC.fieldOf("spawnPos").forGetter((room: Room) => room.spawnPos),
         ScalaIntCodec.fieldOf("number").forGetter((room: Room) => room.number),
-        ScalaListCodec(DynamicSerializableUuid.CODEC).fieldOf("players").forGetter((room: Room) => room.players),
+        ScalaListCodec(Codec.STRING).fieldOf("players").forGetter((room: Room) => room.players),
         ScalaListCodec(Tunnel.CODEC).fieldOf("tunnels").forGetter((room: Room) => room.tunnels)
         ).apply(instance, Room.apply))
   

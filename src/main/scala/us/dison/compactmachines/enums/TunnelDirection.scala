@@ -3,7 +3,7 @@ package us.dison.compactmachines.enums
 import net.minecraft.util.StringIdentifiable 
 import com.mojang.serialization.Codec 
 import net.minecraft.util.math.Direction 
-enum TunnelDirection(val direction: String) extends java.lang.Enum[TunnelDirection], StringIdentifiable: 
+enum TunnelDirection(val direction: String) extends java.lang.Enum[TunnelDirection], StringIdentifiable derives CanEqual: 
   case North extends TunnelDirection("north")
   case East extends TunnelDirection("east")
   case South extends TunnelDirection("south")

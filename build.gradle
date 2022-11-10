@@ -12,7 +12,8 @@ repositories {
     // You should only use this when depending on other mods because
     // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
     // See https://docs.gradle.org/current/userguide/declaring_repositories.html
-    // for more information about repositories.
+    // for more information about repositories.  
+    maven { url "https://maven.bai.lol" }
 }
 
 dependencies {
@@ -29,6 +30,7 @@ dependencies {
     modApi("net.fabricmc:fabric-language-scala:2.0.0+scala.3.0.2") {
 	exclude group: 'net.fabricmc'
     }
+
 }
 
 processResources {
@@ -53,8 +55,8 @@ tasks.withType(JavaCompile).configureEach {
 }
 tasks.withType(ScalaCompile) {
     scalaCompileOptions.additionalParameters = [
-    // "-Ysafe-init", 
-    // "-Yexplicit-nulls"
+        "-Ysafe-init", 
+    // "-Yexplicit-nulls",
     ]
 }
 java {

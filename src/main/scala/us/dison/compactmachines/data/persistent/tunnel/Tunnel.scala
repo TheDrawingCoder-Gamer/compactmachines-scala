@@ -11,7 +11,7 @@ case class Tunnel(pos : BlockPos,
              connectedToItem: Boolean, 
              connectedToFluid: Boolean, 
              connectedToEnergy: Boolean,
-             outgoing: Boolean):
+             outgoing: Boolean) derives CanEqual:
     override def toString(): String = 
       String.format("Tunnel { pos: %s, face: %s, type: %s, connectedToItem: %b, connectedToFluid: %b, connectedToEnergy: %b, outgoing: %b}",
         pos.toString(), face.toString(), tunnelType.toString(), connectedToItem, connectedToFluid, connectedToEnergy, outgoing)

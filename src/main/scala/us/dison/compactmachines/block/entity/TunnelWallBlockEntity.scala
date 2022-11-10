@@ -34,7 +34,7 @@ import us.dison.compactmachines.block.entity.AbstractWallBlockEntity
 import us.dison.compactmachines.util.RoomUtil
 
 class TunnelWallBlockEntity(pos: BlockPos, state: BlockState) extends AbstractWallBlockEntity(CompactMachines.TUNNEL_WALL_BLOCK_ENTITY: @unchecked, pos, state), RenderAttachmentBlockEntity:
-  private var tunnelTypeVar : Option[TunnelType] = Option.empty
+  private var tunnelTypeVar : Option[TunnelType] = None
   private var connectedToItemVar = false 
   private var connectedToEnergyVar = false 
   private var connectedToFluidVar = false 
@@ -63,12 +63,12 @@ class TunnelWallBlockEntity(pos: BlockPos, state: BlockState) extends AbstractWa
   override def toInitialChunkDataNbt() = 
     createNbt() 
   def tunnelType = tunnelTypeVar
-  def setTunnelType(tunnelType: TunnelType) = 
-    this.tunnelTypeVar = Some(tunnelType)
+  def tunnelType_=(tunnelType: Option[TunnelType]) = 
+    this.tunnelTypeVar = tunnelType
     markDirty() 
 
   def connectedToFluid = connectedToFluidVar 
-  def setConnectedToFluid(connected:Boolean) = 
+  def connectedToFluid_=(connected:Boolean) = 
       connectedToFluidVar = connected 
       (this.room, this.tunnel) match 
           case (Some(room), Some(tunnel)) => 
@@ -76,7 +76,7 @@ class TunnelWallBlockEntity(pos: BlockPos, state: BlockState) extends AbstractWa
             markDirty()
           case _ => ()
   def connectedToItem = connectedToItemVar
-  def setConnectedToItem(connected:Boolean) = 
+  def connectedToItem_=(connected:Boolean) = 
       connectedToItemVar = connected
       (this.room, this.tunnel) match 
         case (Some(room), Some(tunnel)) =>
@@ -84,7 +84,7 @@ class TunnelWallBlockEntity(pos: BlockPos, state: BlockState) extends AbstractWa
           markDirty()
         case _ => ()
   def connectedToEnergy = connectedToEnergyVar
-  def setConnectedToEnergy(connected:Boolean) = 
+  def connectedToEnergy_=(connected:Boolean) = 
       connectedToEnergyVar = connected 
       (this.room, this.tunnel) match 
         case (Some(room), Some(tunnel)) =>
@@ -92,20 +92,18 @@ class TunnelWallBlockEntity(pos: BlockPos, state: BlockState) extends AbstractWa
           markDirty()
         case _ => () 
   def outgoing = outgoingVar
-  def setOutgoing(outgoing: Boolean): Unit = 
+  def outgoing_=(outgoing: Boolean): Unit = 
     this.outgoingVar = outgoing 
     (this.room, this.tunnel) match 
       case (Some(room), Some(tunnel)) =>
         CompactMachines.roomManager.updateTunnel(room.number, tunnel.copy(outgoing = outgoing)) 
         markDirty() 
-        // redraw this, nerd
-        this.world.updateListeners(this.getPos(), this.getCachedState(), this.getCachedState(), Block.NOTIFY_ALL | Block.FORCE_STATE)
       case _ => ()
   def room : Option[Room] = 
     parentID.flatMap(CompactMachines.roomManager.getRoomByNumber(_))
   def tunnel : Option[Tunnel] = 
     this.room.map(TunnelUtil.fromRoomAndPos(_, this.getPos())).flatten
-  def setTunnel(tunnel: Tunnel): Unit = 
+  def tunnel_=(tunnel: Tunnel): Unit = 
     parentID.foreach(id =>
       CompactMachines.LOGGER.info("updating tunnel")
       CompactMachines.roomManager.updateTunnel(id, tunnel)
@@ -119,37 +117,36 @@ class TunnelWallBlockEntity(pos: BlockPos, state: BlockState) extends AbstractWa
   private def externalHelper[T](lookup: (World, BlockPos, Direction) =>  T): Option[T] = 
     tunnelType match 
       case Some(TunnelType.Normal) =>
-        this.room match 
-          case Some(room) => 
-            val machinePos = room.machine 
-            try {
-              val machineWorld = getWorld().getServer().getWorld(RegistryKey.of(Registry.WORLD_KEY, room.world)) 
-              (this.tunnel.map(_.face.toDirection()).flatten : Option[Direction]) match 
-                case Some(dir) => 
-                  val targetPos = machinePos.offset(dir, 1) 
-                  machineWorld.getChunkManager().addTicket(ChunkTicketType.PORTAL, ChunkPos(targetPos), 3, targetPos)
-                  Option(lookup(machineWorld, targetPos, dir)) 
-                case None => None 
-            } catch {
-              case ignored: Exception =>
-                CompactMachines.LOGGER.error("Suppressed exception while trying to get external target") 
-                CompactMachines.LOGGER.error(ignored) 
-                None
-            }
-          case None => None
+        this.room.flatMap(room => 
+          val machinePos = room.machine 
+          try {
+            val machineWorld = getWorld().getServer().getWorld(RegistryKey.of(Registry.WORLD_KEY, room.world)) 
+            this.tunnel.flatMap(_.face.toDirection()).flatMap(dir =>
+              val targetPos = machinePos.offset(dir, 1) 
+              machineWorld.getChunkManager().addTicket(ChunkTicketType.PORTAL, ChunkPos(targetPos), 3, targetPos)
+              Option(lookup(machineWorld, targetPos, dir)) 
+            )
+          } catch {
+            case ignored: Exception =>
+              CompactMachines.LOGGER.error("Suppressed exception while trying to get external target") 
+              CompactMachines.LOGGER.error(ignored) 
+              None
+          }
+      )
       case _ => None
   private def internalHelper[T](lookup: (World, BlockPos, Direction) => T): Option[T] = 
     tunnelType match 
       case Some(TunnelType.Normal) =>
         try { 
-          for dir <- Direction.values do
+          Direction.values.collectFirst(Function.unlift ((dir : Direction) => 
               val newPos = pos.offset(dir, 1) 
               world.getBlockEntity(newPos) match 
                 case _ : TunnelWallBlockEntity => None 
                 case be => 
-                  val storage = lookup(world, newPos, dir) 
-                  if storage != null then return Some(storage)
-          None
+                  val storage = lookup(world, newPos, dir)
+                  // Option checks for null
+                  Option(storage)
+          ))
         } catch {
           case ignored: Exception => 
             CompactMachines.LOGGER.error("Surpressed exception while trying to get internal target") 
@@ -171,19 +168,17 @@ class TunnelWallBlockEntity(pos: BlockPos, state: BlockState) extends AbstractWa
     internalHelper(EnergyStorage.SIDED.find)
   def getMachineEntity() : Option[MachineBlockEntity] = 
     try {
-      this.room match 
-        case Some(room) =>
+      this.room.flatMap(room =>  
           val machineWorld = this.getWorld().nn.getServer().nn.getWorld(RegistryKey.of(Registry.WORLD_KEY, room.world)).nn 
           machineWorld.getChunkManager().nn.addTicket(ChunkTicketType.PORTAL, ChunkPos(room.machine), 3, room.machine)
           Option(machineWorld.getBlockEntity(room.machine).asInstanceOf[MachineBlockEntity]) 
-        case None => 
-          None
+      )
     } catch {
       case e: Exception => 
         CompactMachines.LOGGER.error("Surpressed exception while fetching machine entity") 
         CompactMachines.LOGGER.error(e)
         None
     }
-object TunnelWallBlockEntity: 
+object TunnelWallBlockEntity extends us.dison.compactmachines.util.Ticker[TunnelWallBlockEntity]: 
   def tick(world: World, blockPos: BlockPos, blockState: BlockState, tunnelBlockEntity: TunnelWallBlockEntity): Unit = ()
 case class TunnelRenderAttachmentData(tunnelType: Option[TunnelType], isConnected: Boolean, isOutgoing: Boolean)

@@ -1,25 +1,52 @@
 {
-  "variants": {
-    "connected_side=down": {
-      "model": "compactmachines:tunnels/down"
+  "multipart": [
+    {
+      "when": { "connected_side": "north" },
+      "apply":{"model": "compactmachines:tunnels/north_layer" }  
     },
-    "connected_side=up": {
-      "model": "compactmachines:tunnels/up"
+    {
+      "when": { "connected_side": "east" },
+      "apply": {"model": "compactmachines:tunnels/east_layer"} 
     },
-    "connected_side=north": {
-      "model": "compactmachines:tunnels/north"
+    {
+      "when": { "connected_side": "south" },
+      "apply": { "model": "compactmachines:tunnels/south_layer" }
     },
-    "connected_side=south": {
-      "model": "compactmachines:tunnels/south"
+    {
+      "when": { "connected_side": "west"},
+      "apply" : { "model" : "compactmachines:tunnels/west_layer" }
     },
-    "connected_side=west": {
-      "model": "compactmachines:tunnels/west"
+    {
+      "when": { "connected_side": "up" },
+      "apply": { "model" : "compactmachines:tunnels/up_layer" }
     },
-    "connected_side=east": {
-      "model": "compactmachines:tunnels/east"
+    {
+      "when": { "connected_side" : "down" },
+      "apply": { "model" : "compactmachines:tunnels/down_layer"}
     },
-    "connected_side=none": {
-      "model": "compactmachines:tunnels/none"
+    {
+      "when" : { "connected_side": "none" },
+      "apply": { "model" : "compactmachines:tunnels/none_layer" }
+    },
+    {
+      "when": { "going": "incoming" },
+      "apply": { "model": "compactmachines:tunnels/incoming" }
+    },
+    {
+      "when" : { "going": "outgoing" },
+      "apply" : { "model": "compactmachines:tunnels/outgoing" }
+    },
+    {
+      "when" : { "going": "neither" },
+      "apply" : { "model" : "compactmachines:tunnels/neither" }
+    },
+    {
+      "when": { "ttype": "redstone" },
+      "apply" : { "model" : "compactmachines:tunnels/redstone_tunnel" }
+    },
+    {
+      "when" : { "ttype": "normal" },
+      "apply" : { "model" : "compactmachines:tunnels/item_tunnel" }
     }
-  }
+  ]
 }

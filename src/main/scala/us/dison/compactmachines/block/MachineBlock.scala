@@ -32,12 +32,13 @@ import us.dison.compactmachines.data.persistent.tunnel.TunnelType
 import us.dison.compactmachines.item.PSDItem;
 import us.dison.compactmachines.util.RedstoneUtil;
 import us.dison.compactmachines.util.RoomUtil;
+import us.dison.compactmachines.util.TunnelUtil
 
 class MachineBlock(settings: AbstractBlock.Settings, val machineSize: Option[MachineSize]) extends BlockWithEntity(settings): 
   
   private var lastInsidePlayerWarning = 0
 
-  @annotation.nowarn("deprecation") 
+  @annotation.nowarn("cat=deprecation") 
   override def onUse(state: BlockState, world: World, pos: BlockPos, player: PlayerEntity, hand: Hand, hit: BlockHitResult): ActionResult =
     super.onUse(state, world, pos, player, hand, hit) 
     if !world.isClient() then 
@@ -53,8 +54,8 @@ class MachineBlock(settings: AbstractBlock.Settings, val machineSize: Option[Mac
                   case (None, Some(mSize)) => 
                     // make new room 
                     val machineID = RoomUtil.nextID(roomManager) 
-                    machineEntity.setMachineID(machineID) 
-                    machineEntity.setOwner(serverPlayer.getUuid) 
+                    machineEntity.machineID = Some(machineID)
+                    machineEntity.owner = Some(serverPlayer.getUuid)
                     val roomCenterPos = RoomUtil.getCenterPosByID(machineID)
                     val spawnPos = roomCenterPos.add(0, -(mSize.size/2d)+1, 0)
                     serverPlayer.sendMessage(TranslatableText("message.compactmachines.generating_room"), true) 
@@ -93,8 +94,8 @@ class MachineBlock(settings: AbstractBlock.Settings, val machineSize: Option[Mac
               machineEntity.machineID match 
                 case None => 
                   val machineID = RoomUtil.nextID(roomManager) 
-                  machineEntity.setMachineID(machineID)
-                  machineEntity.setOwner(clientPlayer.getUuid)
+                  machineEntity.machineID = Some(machineID)
+                  machineEntity.owner = Some(clientPlayer.getUuid)
                 case Some(i) => () 
               end match 
               ActionResult.SUCCESS
@@ -141,22 +142,21 @@ class MachineBlock(settings: AbstractBlock.Settings, val machineSize: Option[Mac
         if world.getRegistryKey() eq CompactMachines.CMWORLD_KEY then 
           CompactMachines.roomManager.getRoomFromPos(pos) match 
             case Some(room) => 
-              blockEntity.setParentID(Some(room.number))
+              blockEntity.parentID = Some(room.number)
             case None => ()
 
-        blockEntity.setOwner(placer.nn.getUuid())
+        blockEntity.owner = Some(placer.nn.getUuid())
         blockEntity.markDirty() 
         if !world.isClient() then 
-          blockEntity.machineID  match
-            case None => ()
-            case Some(id) => 
-             val roomManager = CompactMachines.roomManager 
-             roomManager.updateMachinePosAndOwner(id, world.getRegistryKey.getValue, pos, placer.nn.getUuidAsString)
+          blockEntity.machineID.foreach(id => 
+            val roomManager = CompactMachines.roomManager 
+            roomManager.updateMachinePosAndOwner(id, world.getRegistryKey.getValue, pos, placer.nn.getUuidAsString)
+          )
   override def getRenderType(state: BlockState) = BlockRenderType.MODEL 
   override def getTicker[T <: BlockEntity](world: World | Null, state: BlockState | Null, kind: BlockEntityType[T] | Null): BlockEntityTicker[T] | Null = 
     BlockWithEntity.checkType(kind, CompactMachines.MACHINE_BLOCK_ENTITY, MachineBlockEntity.tick) 
 
-  @annotation.nowarn("deprecation") 
+  @annotation.nowarn("cat=deprecation") 
   override def calcBlockBreakingDelta(state: BlockState, player: PlayerEntity, world: BlockView, pos: BlockPos): Float = 
     val original = super.calcBlockBreakingDelta(state, player, world, pos)
     world.getBlockEntity(pos) match 
@@ -174,37 +174,45 @@ class MachineBlock(settings: AbstractBlock.Settings, val machineSize: Option[Mac
           case _ => original 
       case _ => original
   override def emitsRedstonePower(state: BlockState | Null): Boolean = true
-  override def getWeakRedstonePower(state: BlockState | Null, world: BlockView | Null, pos: BlockPos, direction: Direction | Null): Int = 
-    val tunnel = getTunnelOf(pos, world, Option(direction), TunnelType.Redstone) 
-    world.getBlockEntity(pos).getWorld().getServer() match 
-      case null => 0 
-      case server => 
-        tunnel match { 
-          case Some(t) =>
-            val cmWorld = server.getWorld(CompactMachines.CMWORLD_KEY)
-            cmWorld.getBlockEntity(pos) match {
-              case null => 0
-              case tunnelEntity : TunnelWallBlockEntity =>
-                if tunnelEntity.outgoing then 
-                  0 
-                else 
-                  RedstoneUtil.getPower(cmWorld, t.pos) 
-            }
-          case None => 
+  override def getWeakRedstonePower(state: BlockState | Null, world: BlockView | Null, pos: BlockPos, direction: Direction): Int = 
+    TunnelUtil.getTunnelOfMachine(world, pos, Option(direction), TunnelType.Redstone).map(tunnel => 
+        CompactMachines.LOGGER.info("tunnel exists for " + direction.toString())
+        world.getBlockEntity(pos).getWorld().getServer() match 
+          case null => 
+            CompactMachines.LOGGER.warn("Couldn't fetch server") 
             0
-        }
+          case server => 
+            val cmWorld = server.getWorld(CompactMachines.CMWORLD_KEY) 
+            cmWorld.getBlockEntity(tunnel.pos) match 
+              case tunnelEntity : TunnelWallBlockEntity if tunnelEntity.outgoing =>
+                CompactMachines.LOGGER.info("fetching redstone")
+                RedstoneUtil.getPower(cmWorld, tunnel.pos)
+              case _ => 0
+    ) match
+        case Left(why) => 
+          CompactMachines.LOGGER.warn(why) 
+          0
+        case Right(power) => power
               
-  private def getTunnelOf(pos: BlockPos, world: BlockView, direction: Option[Direction], tunnelType: TunnelType): Option[Tunnel] = 
+  override def neighborUpdate(state: BlockState, world: World, pos : BlockPos, block: Block, fromPos: BlockPos, notify: Boolean) : Unit = {
     val roomManager = CompactMachines.roomManager 
-    world.getBlockEntity(pos) match { 
-      case machineBlockEntity : MachineBlockEntity => 
-        (roomManager.getRoomByNumber(machineBlockEntity.machineID.getOrElse(-1)) : Option[Room]) match { 
-          case Some(room) => room.tunnels.find((tunnel : Tunnel) => tunnel.face.toDirection() == direction && tunnel.tunnelType == tunnelType)
-          case None => Option.empty
+    world.getBlockEntity(pos) match {
+      case machine : MachineBlockEntity => 
+        Option(machine.getWorld().getServer()) match {
+          case None => ()
+          case Some(server) => 
+            machine.machineID.flatMap(roomManager.getRoomByNumber).foreach { room => 
+              for (tunnel <- room.tunnels) {
+                if (tunnel.face.toDirection().isDefined && tunnel.tunnelType == TunnelType.Redstone) {
+                  server.getWorld(CompactMachines.CMWORLD_KEY).updateNeighborsAlways(tunnel.pos, CompactMachines.BLOCK_WALL_TUNNEL)
+                }
+              }
+            }
         }
-      case _ => None
+      case _ => ()
+
     }
-                
+  }
     
 
     

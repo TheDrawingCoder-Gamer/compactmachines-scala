@@ -14,6 +14,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import us.dison.compactmachines.CompactMachines;
+import us.dison.compactmachines.block.MachineBlock;
 import us.dison.compactmachines.block.entity.MachineWallBlockEntity;
 import us.dison.compactmachines.data.persistent.Room;
 import us.dison.compactmachines.data.persistent.RoomManager;
@@ -30,7 +31,7 @@ class PSDItem(settings: Item.Settings) extends Item(settings):
       val machinePos = room.machine 
       CompactMachines.LOGGER.info("Teleporting player " + player.getDisplayName.asString + " out of machine #" + room.number.toString + " at: " + room.center.toShortString)
       RoomUtil.teleportOutOfRoom(machineWorld, player, room) 
-      CompactMachines.roomManager.rmPlayer(room.number, player.getUuid)
+      // CompactMachines.roomManager.rmPlayer(room.number, player.getUuid)
     )
   override def use(world: World, user: PlayerEntity, hand: Hand): TypedActionResult[ItemStack] | Null = 
     super.use(world, user, hand)
@@ -42,43 +43,25 @@ class PSDItem(settings: Item.Settings) extends Item(settings):
         MinecraftClient.getInstance().nn.setScreen(PSDScreen(TranslatableText("compactmachines.psd.pages.machine.title")))
       TypedActionResult.success(user.getStackInHand(hand))
     else 
-      world.getServer() match 
-        case null => TypedActionResult.pass(user.getStackInHand(hand))
-        case server => 
+      Option(world.getServer()).map(server => 
           val serverPlayer = user.asInstanceOf[ServerPlayerEntity]
-          teleportOutOfRoom(server, serverPlayer)
+          if (user.isSneaking()) {
+            CompactMachines.roomManager.getRoomFromPos(user.getBlockPos()).foreach(room => 
+              CompactMachines.roomManager.updateSpawnPos(room.number, user.getBlockPos())
+              serverPlayer.sendMessage(TranslatableText("message.compactmachines.spawnpoint_set"), true)
+            )
+          } else {
+            teleportOutOfRoom(server, serverPlayer)
+          }
           TypedActionResult.success(user.getStackInHand(hand))
-  override def useOnBlock(context: ItemUsageContext): ActionResult = 
+      ).getOrElse(TypedActionResult.pass(user.getStackInHand(hand)))
+  
+  
+  override def useOnBlock(context: ItemUsageContext): ActionResult =
     super.useOnBlock(context) 
-    if context.getWorld().nn.isClient() then 
-      ActionResult.FAIL 
-    else 
-      if !context.getWorld.isInstanceOf[ServerWorld] then return ActionResult.FAIL
-      val serverWorld = context.getWorld.asInstanceOf[ServerWorld] 
-      if serverWorld.getRegistryKey() ne CompactMachines.CMWORLD_KEY then return ActionResult.FAIL 
-      if !context.getPlayer().nn.isSneaking() then 
-        teleportOutOfRoom(serverWorld.getServer(), context.getPlayer().nn.asInstanceOf[ServerPlayerEntity]) 
-        return ActionResult.SUCCESS
-      val blockEntity = serverWorld.getBlockEntity(context.getBlockPos()) 
-      if blockEntity.isInstanceOf[MachineWallBlockEntity] then 
-        val wallEntity = blockEntity.asInstanceOf[MachineWallBlockEntity] 
-        val roomManager = CompactMachines.roomManager 
-        roomManager.getRoomByNumber(wallEntity.parentID.getOrElse(-1)) match 
-          case Some(room) => 
-            val serverPlayer = context.getPlayer().nn.asInstanceOf[ServerPlayerEntity]
-       
-            if room.spawnPos != wallEntity.getPos() then 
-              if 
-                serverWorld.getBlockState(wallEntity.getPos().nn.add(0, 1, 0)).nn.getBlock() != CompactMachines.BLOCK_WALL_UNBREAKABLE
-                && wallEntity.getPos().nn.getY() < room.center.getY() then 
-                  roomManager.updateSpawnPos(room.number, wallEntity.getPos())
-                  serverPlayer.sendMessage(TranslatableText("message.compactmachines.spawnpoint_set"), true)
-                  ActionResult.SUCCESS 
-              else 
-                ActionResult.FAIL
-            else 
-              ActionResult.SUCCESS
-          case None => ActionResult.FAIL
-        else  
-          ActionResult.FAIL
-        
+    // sanity drainage 
+    if (context.getWorld().getBlockState(context.getBlockPos()).getBlock().isInstanceOf[MachineBlock]) {
+      ActionResult.SUCCESS 
+    } else {
+      use(context.getWorld(), context.getPlayer(), context.getHand()).getResult()
+    }

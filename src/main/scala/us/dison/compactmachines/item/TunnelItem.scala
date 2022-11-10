@@ -16,7 +16,8 @@ class TunnelItem(settings: Settings, val tunnelType : Option[TunnelType]) extend
     val s = super.getDefaultStack() 
     tunnelType match 
       case Some(t) => 
-        s.setSubNbt("type", NbtString.of(t.tunnelName))
+        // todo this is suspicious
+        // s.setSubNbt("type", NbtString.of(t.tunnelName))
         s
       case _ => s
   override def getName(stack: ItemStack): Text = 

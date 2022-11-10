@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "RBR",
+    "RWR",
+    "RRR"
+  ],
+  "key": {
+    "W": {
+      "item": "compactmachines:wall"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "B": {
+      "item": "minecraft:redstone_block"
+    }
+  },
+  "result": {
+    "item": "compactmachines:redstone_tunnel",
+    "count": 16
+  }
+}

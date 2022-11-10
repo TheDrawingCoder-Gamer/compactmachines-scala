@@ -57,7 +57,7 @@ object RoomUtil:
     BlockPos.iterate(corner1, corner2).forEach(blockPos => 
         world.getBlockEntity(blockPos) match 
           case blockEntity : MachineWallBlockEntity => 
-            blockEntity.setParentID(id)
+            blockEntity.parentID = Some(id)
           case _ => ()
     )
   def getBox(centerPos : BlockPos, size: Int) = 

@@ -6,6 +6,7 @@ import net.minecraft.block.Blocks
 import net.minecraft.block.BlockState 
 import net.minecraft.block.RedstoneWireBlock 
 import net.minecraft.util.math.Direction 
+import us.dison.compactmachines.util.canequal._
 
 object RedstoneUtil: 
   def getPower(world: World, pos: BlockPos): Int =
@@ -15,7 +16,7 @@ object RedstoneUtil:
     else 
       var insanePower = 0
       for dir <- Direction.values.nn.filter(_ != Direction.DOWN).map(_.nn) do 
-        val state = world.getBlockState(pos).nn 
+        val state = world.getBlockState(pos.offset(dir)).nn 
         if state.isOf(Blocks.REDSTONE_WIRE) then 
           val wirePower = state.get(RedstoneWireBlock.POWER).nn 
           if wirePower >= 15 then return wirePower 

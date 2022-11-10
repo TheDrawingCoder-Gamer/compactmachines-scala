@@ -14,7 +14,7 @@ import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.Hand
 import net.minecraft.entity.player.PlayerEntity
 import us.dison.compactmachines.block.entity.TunnelWallBlockEntity.apply
-import us.dison.compactmachines.data.persistent.tunnel.Tunnel
+import us.dison.compactmachines.data.persistent.tunnel.{Tunnel, TunnelType}
 import us.dison.compactmachines.enums.TunnelDirection
 import us.dison.compactmachines.item.TunnelItem
 import us.dison.compactmachines.util.TunnelUtil
@@ -31,28 +31,34 @@ class MachineWallBlock(settings: AbstractBlock.Settings, breakable: Boolean) ext
           case None => ActionResult.FAIL 
           case Some(room) => 
             player.getStackInHand(hand).getItem() match 
-              case _ : TunnelItem => 
-                val stackNbt = player.getStackInHand(hand).getNbt()
-                TunnelUtil.typeFromNbt(stackNbt).foreach(tunnelType => 
-                  CompactMachines.LOGGER.info("The type nbt exists")
-                  world.breakBlock(pos, false) 
-                  world.setBlockState(pos, 
-                    CompactMachines.BLOCK_WALL_TUNNEL.getDefaultState(),
-                    Block.NOTIFY_ALL | Block.FORCE_STATE)
-                  CompactMachines.LOGGER.info("set block state")
-                  world.getBlockEntity(pos) match 
-                    case tunnelE : TunnelWallBlockEntity => 
-                      val tunnel = Tunnel(wall.getPos, TunnelDirection.NoDir, tunnelType, false, false, false, false)
-                      CompactMachines.LOGGER.info("fetched tunnel")
-                      CompactMachines.roomManager.addTunnel(room.number, tunnel)
-                      CompactMachines.LOGGER.info("add tunnel")
-                      // safety: we already pattern matched on it nerd
-                      tunnelE.setParentID(wall.parentID.get)
-                      tunnelE.setTunnel(tunnel) 
-                    case _ => 
-                      CompactMachines.LOGGER.warn("Tunnel wall doesn't have an entity")
-                )
-                ActionResult.SUCCESS
+              case item : TunnelItem =>
+                val tunnelType = item.tunnelType.getOrElse(TunnelType.Normal)
+                // CompactMachines.LOGGER.info("The type nbt exists")
+                world.breakBlock(pos, false) 
+                world.setBlockState(pos, 
+                  CompactMachines.BLOCK_WALL_TUNNEL.getDefaultState().`with`(TunnelWallBlock.TUNNEL_TYPE, tunnelType),
+                  Block.NOTIFY_ALL | Block.FORCE_STATE)
+                CompactMachines.LOGGER.info("set block state")
+                world.getBlockEntity(pos) match 
+                  case tunnelE : TunnelWallBlockEntity => 
+                    val tunnel = Tunnel(wall.getPos, TunnelDirection.NoDir, tunnelType, false, false, false, false)
+                    CompactMachines.LOGGER.info("fetched tunnel")
+                    CompactMachines.roomManager.addTunnel(room.number, tunnel)
+                    CompactMachines.LOGGER.info("add tunnel")
+                    tunnelE.parentID = wall.parentID
+                    tunnelE.tunnelType = Some(tunnelType)
+                    tunnelE.connectedToEnergy = false 
+                    tunnelE.connectedToFluid = false
+                    tunnelE.connectedToItem  = false
+                    // world.setBlockState(pos, world.getBlockState(pos), Block.NOTIFY_ALL | Block.FORCE_STATE)
+                    world.getBlockState(pos).getBlock() match 
+                      case block : TunnelWallBlock => 
+                        CompactMachines.LOGGER.info("wtf it's a tunnel block at " + pos.toShortString)
+                      case _ => ()
+                  case _ => 
+                    CompactMachines.LOGGER.warn("Tunnel wall doesn't have an entity")
+                player.getStackInHand(hand).decrement(1)
+                ActionResult.CONSUME
               case _ => ActionResult.PASS
                 
       case _ => s 

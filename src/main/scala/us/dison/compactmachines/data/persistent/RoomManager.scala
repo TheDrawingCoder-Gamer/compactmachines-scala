@@ -83,25 +83,28 @@ class RoomManager extends PersistentState:
         rooms.subtractOne(oldRoom)
         rooms.addOne(newRoom)
       case None => ()
-  def rmPlayer(id: Int, player: UUID) = 
+  def rmPlayer(id: Int, playerUuid: UUID) = 
+    val player = playerUuid.toString
     getRoomByNumber(id) match {
       case Some(oldRoom) => 
         if !oldRoom.players.contains(player) then 
           CompactMachines.LOGGER.warn("tried to remove player from room, but they aren't in it")
         else 
-          updatePlayers(id, oldRoom.players.filterNot(_ == player))
+          updatePlayersByString(id, oldRoom.players.filterNot(_ == player))
       case None => ()
     }
-  def addPlayer(id: Int, player: UUID): Unit = 
+  def addPlayer(id: Int, playerUuid: UUID): Unit = 
+    val player = playerUuid.toString
     getRoomByNumber(id) match {
       case Some(oldRoom) => 
         if oldRoom.players.contains(player) then 
           CompactMachines.LOGGER.warn("tried to put player in room, but they were already in it")
         else 
-          updatePlayers(id, oldRoom.players.appended(player))
+          updatePlayersByString(id, oldRoom.players.appended(player))
       case None => ()
     }
-  def updatePlayers(id: Int, players: IterableOnce[UUID]): Unit =
+  def updatePlayers(id: Int, players: IterableOnce[UUID]): Unit = updatePlayersByString(id, players.iterator.map(_.toString))
+  def updatePlayersByString(id: Int, players: IterableOnce[String]): Unit =
     getRoomByNumber(id) match 
       case Some(oldRoom) => 
         val playerList = List.from(players)
@@ -128,17 +131,17 @@ class RoomManager extends PersistentState:
     updateTunnels(id, oldRoom.get.tunnels.appended(tunnel))
   def updateTunnel(id: Int, tunnel: Tunnel) : Unit = 
     (getRoomByNumber(id) : Option[Room]) match 
-      case None => ()
+      case None => 
+        CompactMachines.LOGGER.warn("Can't update tunnel in an invalid room")
       case Some(oldRoom) => 
         val tunnels = oldRoom.tunnels 
         if tunnels.size < 1 then 
           addTunnel(id, tunnel) 
         else 
           val pos = tunnel.pos 
-          val targetTunnel = tunnels.find((t: Tunnel) => TunnelUtil.equalBlockPos(tunnel.pos, t.pos))
-          targetTunnel match 
-            case Some(newTunnel) => 
-              updateTunnels(id,tunnels.filter(_ != tunnel).appended(newTunnel))
+          tunnels.find((t: Tunnel) => TunnelUtil.equalBlockPos(tunnel.pos, t.pos)) match 
+            case Some(oldTunnel) => 
+              updateTunnels(id,tunnels.filter(_ != oldTunnel).appended(tunnel))
             case None => ()
   def getRoomByNumber(id: Int):Option[Room] =
    rooms.find(_.number == id)

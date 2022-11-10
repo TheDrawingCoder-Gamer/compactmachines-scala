@@ -39,7 +39,7 @@ class MachineBlockEntity(
     this.parentID_ = Option.unless(parentTag == -1)(parentTag)
   override protected[entity] def writeNbt(tag: NbtCompound): Unit = 
     tag.putInt("number", this.machineID.getOrElse(-1))
-    if this.owner.isEmpty then setOwner(UUID(0, 0))
+    if this.owner.isEmpty then owner = Some(UUID(0, 0))
     tag.putUuid("uuid", this.owner.getOrElse(UUID(0, 0))) 
     tag.putInt("parentID", this.parentID.getOrElse(-1))
     super.writeNbt(tag)
@@ -48,15 +48,16 @@ class MachineBlockEntity(
   override def toInitialChunkDataNbt() = 
     createNbt() 
   def machineID = machineID_ 
-  def setMachineID(machineID : Int) = 
-    this.machineID_ = Some(machineID)
+  def machineID_=(machineID : Option[Int]) = 
+    this.machineID_ = machineID
     markDirty() 
   def owner = owner_
-  def setOwner(owner : UUID) = 
-    this.owner_ = Option(owner) 
+  def owner_=(owner : Option[UUID]) = 
+
+    this.owner_ = owner
     markDirty()
   def parentID = parentID_ 
-  def setParentID(parentID : Option[Int]) = 
+  def parentID_=(parentID : Option[Int]) = 
     this.parentID_ = parentID 
     markDirty()
 object MachineBlockEntity extends Ticker[MachineBlockEntity]: 

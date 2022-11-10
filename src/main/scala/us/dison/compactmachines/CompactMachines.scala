@@ -52,6 +52,7 @@ import us.dison.compactmachines.item.TunnelItem;
 
 import java.util.function._
 import net.minecraft.block.entity.BlockEntity
+
 object CompactMachines extends ModInitializer: 
   val MODID = "compactmachines" 
   val LOGGER = LogManager.getLogger("CompactMachines")
@@ -73,6 +74,7 @@ object CompactMachines extends ModInitializer:
   val ID_WALL = Identifier(MODID, "wall")
   val ID_WALL_TUNNEL = Identifier(MODID, "tunnel_wall")
   val ID_PSD = Identifier(MODID, "personal_shrinking_device") 
+  val ID_REDSTONE_TUNNEL = Identifier(MODID, "redstone_tunnel") 
   val ID_TUNNEL = Identifier(MODID, "tunnel") 
 
   // Block settings 
@@ -92,7 +94,8 @@ object CompactMachines extends ModInitializer:
   
   val SETTINGS_ITEM = FabricItemSettings() 
   
-  val ITEM_TUNNEL = TunnelItem(SETTINGS_ITEM, None) 
+  val ITEM_ITEM_TUNNEL = TunnelItem(SETTINGS_ITEM, Some(TunnelType.Normal)) 
+  val ITEM_REDSTONE_TUNNEL = TunnelItem(SETTINGS_ITEM, Some(TunnelType.Redstone)) 
   val ITEM_PSD = PSDItem(FabricItemSettings().maxCount(1)) 
   val ITEM_MACHINE_TINY = BlockItem(BLOCK_MACHINE_TINY, SETTINGS_ITEM)
   val ITEM_MACHINE_SMALL = BlockItem(BLOCK_MACHINE_SMALL, SETTINGS_ITEM)
@@ -106,10 +109,8 @@ object CompactMachines extends ModInitializer:
 
   val CM_ITEMGROUP = FabricItemGroupBuilder.create(Identifier(MODID, "title")).nn
     .icon(() => ItemStack(BLOCK_MACHINE_NORMAL)).nn
-    .appendItems((stacks : java.util.List[ItemStack] | Null) => 
-        if stacks == null then 
-          ()
-        else
+    .appendItems((badStacks : java.util.List[ItemStack]) => 
+        Option(badStacks).foreach(stacks =>  
           stacks.add(ItemStack(ITEM_PSD)) 
           stacks.add(ItemStack(ITEM_MACHINE_TINY))
           stacks.add(ItemStack(ITEM_MACHINE_SMALL))
@@ -120,13 +121,13 @@ object CompactMachines extends ModInitializer:
           stacks.add(ItemStack(ITEM_WALL_UNBREAKABLE))
           stacks.add(ItemStack(ITEM_WALL))
           // omitting wall tunnel on purpose 
-          val redstoneStack = ItemStack(ITEM_TUNNEL) 
-          redstoneStack.setSubNbt("type", NbtString.of(TunnelType.Redstone.tunnelName))
-          val normalStack = ItemStack(ITEM_TUNNEL) 
-          normalStack.setSubNbt("type", NbtString.of(TunnelType.Normal.tunnelName)) 
+          val redstoneStack = ItemStack(ITEM_REDSTONE_TUNNEL) 
+          // redstoneStack.setSubNbt("type", NbtString.of(TunnelType.Redstone.tunnelName))
+          val normalStack = ItemStack(ITEM_ITEM_TUNNEL) 
+          // normalStack.setSubNbt("type", NbtString.of(TunnelType.Normal.tunnelName)) 
           stacks.add(redstoneStack)
           stacks.add(normalStack)
-          ()
+      )
   ).build()
   lazy val MACHINE_BLOCK_ENTITY : BlockEntityType[MachineBlockEntity] = Registry.register(Registry.BLOCK_ENTITY_TYPE, MODID + ":machine_block_entity", FabricBlockEntityTypeBuilder.create( 
     (a: BlockPos | Null, b: BlockState | Null) => MachineBlockEntity(a.nn, b.nn, None, None), 
@@ -164,31 +165,42 @@ object CompactMachines extends ModInitializer:
     MACHINE_BLOCK_ENTITY 
     MACHINE_WALL_BLOCK_ENTITY
     TUNNEL_WALL_BLOCK_ENTITY
-    def internalHelper[T](connectedSetter: (TunnelWallBlockEntity, Boolean) => Unit, targetGetter: TunnelWallBlockEntity => Option[T], machineEntity : MachineBlockEntity, direction: Direction | Null):T | Null  = 
-      machineEntity.machineID.flatMap(roomManager.getRoomByNumber(_)).flatMap(room => 
-        room.tunnels.filter(t => t.tunnelType == TunnelType.Normal && t.face.toDirection() == direction).collectFirst(scala.Function.unlift(tunnel =>
-          machineEntity.getWorld().nn.getBlockEntity(tunnel.pos) match 
+    def internalHelper[T](connectedSetter: (TunnelWallBlockEntity, Boolean) => Unit, targetGetter: TunnelWallBlockEntity => Option[T], machineEntity : MachineBlockEntity, direction: Direction | Null):T | Null  =
+      LOGGER.info(machineEntity.machineID)
+      machineEntity.machineID.flatMap(roomManager.getRoomByNumber(_)).flatMap(room =>
+        LOGGER.info("Is a valid room")
+        room.tunnels.filter(t => t.tunnelType == TunnelType.Normal && t.face.toDirection() == Option(direction)).collectFirst(scala.Function.unlift(tunnel =>
+          if (machineEntity.getWorld().isClient) {
+            LOGGER.warn("Not a server")
+            None 
+          } else {
+          machineEntity.getWorld().getServer().getWorld(CMWORLD_KEY).nn.getBlockEntity(tunnel.pos) match 
             case wall : TunnelWallBlockEntity => 
               connectedSetter(wall, false) 
               targetGetter(wall) match 
                 case Some(intlTarget) => 
                   connectedSetter(wall, true) 
                   Some(intlTarget)
-                case None => None 
-            case _ => None
-            ))
+                case None =>  
+                  LOGGER.warn("No internal target")
+                  None
+            case _ => 
+              LOGGER.warn("Tunnel pos isn't a tunnel")
+              None
+          }
+        ))
       ).orNull
     ItemStorage.SIDED.registerForBlockEntity[MachineBlockEntity](
       (machineEntity, direction) => 
-        internalHelper(_.setConnectedToItem(_), _.intlItemTarget, machineEntity, direction)
+        internalHelper(_.connectedToItem = _, _.intlItemTarget, machineEntity, direction)
     , MACHINE_BLOCK_ENTITY)
     FluidStorage.SIDED.registerForBlockEntity[MachineBlockEntity](
       (machineEntity, direction) => 
-        internalHelper(_.setConnectedToFluid(_), _.intlFluidTarget, machineEntity, direction)
+        internalHelper(_.connectedToFluid = _, _.intlFluidTarget, machineEntity, direction)
     , MACHINE_BLOCK_ENTITY)
     EnergyStorage.SIDED.registerForBlockEntity[MachineBlockEntity](
       (machineEntity, direction) => 
-        internalHelper(_.setConnectedToEnergy(_), _.intlEnergyTarget, machineEntity, direction)
+        internalHelper(_.connectedToEnergy = _, _.intlEnergyTarget, machineEntity, direction)
     , MACHINE_BLOCK_ENTITY)
     ItemStorage.SIDED.registerForBlockEntity[TunnelWallBlockEntity](
       (wall, direction) => 
@@ -221,7 +233,8 @@ object CompactMachines extends ModInitializer:
     Registry.register(Registry.ITEM, ID_WALL_UNBREAKABLE, ITEM_WALL_UNBREAKABLE) 
     Registry.register(Registry.ITEM, ID_WALL, ITEM_WALL) 
     Registry.register(Registry.ITEM, ID_WALL_TUNNEL, ITEM_WALL_TUNNEL) 
-    Registry.register(Registry.ITEM, ID_TUNNEL, ITEM_TUNNEL) 
+    Registry.register(Registry.ITEM, ID_TUNNEL, ITEM_ITEM_TUNNEL) 
+    Registry.register(Registry.ITEM, ID_REDSTONE_TUNNEL, ITEM_REDSTONE_TUNNEL) 
     Registry.register(Registry.ITEM, ID_PSD, ITEM_PSD)
     
     LOGGER.info("CompactMachines initialized")

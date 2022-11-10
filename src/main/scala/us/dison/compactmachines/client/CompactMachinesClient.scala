@@ -56,39 +56,17 @@ object CompactMachinesClient extends ClientModInitializer:
             } else
             if (Registry.ITEM.getId(stack.getItem()).equals(ID_WALL_UNBREAKABLE)) { // Unbreakable wall tooltip
                 lines.add(1, TranslatableText("tooltip.compactmachines.details.solid_wall").formatted(Formatting.RED));
-            } else
-            if (Registry.ITEM.getId(stack.getItem()).equals(ID_TUNNEL)) { // Tunnel item
-                val stackNbt = stack.getNbt();
-                var errMsg : Text | Null = null;
-                if (stackNbt == null) {
-                    errMsg = TranslatableText("compactmachines.errors.no_data");
-                } else {
-                    val typeNbt = stackNbt.get("type");
-                    if (typeNbt == null) {
-                        errMsg = TranslatableText("compactmachines.errors.no_type");
-                    } else {
-                        val tType = TunnelType.byName(typeNbt.asString());
-                        if (tType == null) {
-                            errMsg = LiteralText(typeNbt.asString());
-                        }
-                    }
-                }
-
-                if (errMsg != null) {
-                    lines.add(1, TranslatableText("compactmachines.errors.unknown_tunnel_type", errMsg).formatted(Formatting.RED));
-                }
-            }
+            } 
         });
 
         // Make Tunnel Wall Blocks have transparent render layers
         BlockRenderLayerMap.INSTANCE.putBlock(CompactMachines.BLOCK_WALL_TUNNEL, RenderLayer.getCutout());
         // Tint Tunnel Wall Blocks
         ColorProviderRegistry.BLOCK.register((state, world, pos, tintIndex) =>
-            CompactMachines.LOGGER.info("coloring tunnel")
             world.getBlockEntity(pos) match {
                 case tunnelWall : TunnelWallBlockEntity => 
                     val ra = tunnelWall.getRenderAttachmentData().asInstanceOf[TunnelRenderAttachmentData]
-                    var daType = ra.tunnelType.orElse(CompactMachines.BLOCK_WALL_TUNNEL.tunnel.map(_.tunnelType)) 
+                    var daType = ra.tunnelType 
                     val isConnected = ra.isConnected;
                     tintIndex match {
                         case 0 => daType match { case None => 0xff00ff case Some(t) => t.color }
@@ -103,7 +81,7 @@ object CompactMachinesClient extends ClientModInitializer:
             }
 
         , BLOCK_WALL_TUNNEL);
-
+        /*
         // Tint Tunnel items
         ColorProviderRegistry.ITEM.register((stack, tintIndex) => {
             val stackNbt = stack.getNbt();
@@ -124,5 +102,6 @@ object CompactMachinesClient extends ClientModInitializer:
                             0xff00ff
                     
         }, ITEM_TUNNEL);
+        */
 
     
