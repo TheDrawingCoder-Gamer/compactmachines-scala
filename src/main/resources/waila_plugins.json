@@ -1,0 +1,9 @@
+{
+  "compactmachines:plugin": {
+    "initializer": "us.dison.compactmachines.compat.CompactWthitPlugin",
+    "side": "*",
+    "required": []
+
+  }
+
+}

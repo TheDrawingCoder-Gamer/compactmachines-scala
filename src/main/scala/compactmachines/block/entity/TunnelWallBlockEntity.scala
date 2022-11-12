@@ -25,11 +25,12 @@ import net.minecraft.world.World;
 import team.reborn.energy.api.EnergyStorage;
 
 import us.dison.compactmachines.CompactMachines;
-import us.dison.compactmachines.enums.TunnelDirection;
+import us.dison.compactmachines.enums.{TunnelDirection, TunnelGoing};
 import us.dison.compactmachines.data.persistent.Room;
 import us.dison.compactmachines.data.persistent.tunnel.Tunnel;
 import us.dison.compactmachines.data.persistent.tunnel.TunnelType;
 import us.dison.compactmachines.util.TunnelUtil;
+import us.dison.compactmachines.block.TunnelWallBlock
 import us.dison.compactmachines.block.entity.AbstractWallBlockEntity
 import us.dison.compactmachines.util.RoomUtil
 
@@ -112,6 +113,11 @@ class TunnelWallBlockEntity(pos: BlockPos, state: BlockState) extends AbstractWa
       this.connectedToEnergyVar = tunnel.connectedToEnergy
       this.connectedToItemVar = tunnel.connectedToItem
       this.connectedToFluidVar = tunnel.connectedToFluid
+      this.world.setBlockState(this.getPos(), this.world.getBlockState(this.getPos())
+        .`with`(TunnelWallBlock.CONNECTED_SIDE, tunnel.face)
+        .`with`(TunnelWallBlock.GOING, if (tunnel.tunnelType == TunnelType.Redstone) { if (this.outgoing) TunnelGoing.Outgoing else TunnelGoing.Incoming } else TunnelGoing.Neither)
+        .`with`(TunnelWallBlock.TUNNEL_TYPE, tunnel.tunnelType)
+      )
       markDirty()
     )
   private def externalHelper[T](lookup: (World, BlockPos, Direction) =>  T): Option[T] = 

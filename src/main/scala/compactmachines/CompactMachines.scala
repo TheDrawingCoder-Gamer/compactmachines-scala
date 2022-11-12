@@ -49,14 +49,14 @@ import us.dison.compactmachines.data.persistent.tunnel.Tunnel;
 import us.dison.compactmachines.data.persistent.tunnel.TunnelType;
 import us.dison.compactmachines.item.PSDItem;
 import us.dison.compactmachines.item.TunnelItem;
-
+import net.minecraft.tag.TagKey
 import java.util.function._
 import net.minecraft.block.entity.BlockEntity
 
 object CompactMachines extends ModInitializer: 
   val MODID = "compactmachines" 
   val LOGGER = LogManager.getLogger("CompactMachines")
-  
+  val WRENCH_TAG = TagKey.of(Registry.ITEM_KEY, Identifier("c", "wrenches"))
   // Biome & biome key 
   private val CMBIOME = createCMBiome() 
   val CMBIOME_KEY = RegistryKey.of(Registry.BIOME_KEY, Identifier(MODID, "compactmachines")).nn

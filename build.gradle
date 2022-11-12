@@ -30,7 +30,12 @@ dependencies {
     modApi("net.fabricmc:fabric-language-scala:2.0.0+scala.3.0.2") {
 	exclude group: 'net.fabricmc'
     }
+    // compile against the API
+    modCompileOnly "mcp.mobius.waila:wthit-api:fabric-${project.wthit_version}"
 
+    // run against the full jar
+    modRuntimeOnly "mcp.mobius.waila:wthit:fabric-${project.wthit_version}"
+    modRuntimeOnly "lol.bai:badpackets:fabric-0.2.0"
 }
 
 processResources {

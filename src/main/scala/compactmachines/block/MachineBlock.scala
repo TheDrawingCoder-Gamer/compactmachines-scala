@@ -22,7 +22,7 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import us.dison.compactmachines.CompactMachines;
-import us.dison.compactmachines.enums.MachineSize;
+import us.dison.compactmachines.enums.{MachineSize, TunnelDirection};
 import us.dison.compactmachines.block.entity.MachineBlockEntity;
 import us.dison.compactmachines.block.entity.TunnelWallBlockEntity;
 import us.dison.compactmachines.data.persistent.Room;
@@ -33,7 +33,8 @@ import us.dison.compactmachines.item.PSDItem;
 import us.dison.compactmachines.util.RedstoneUtil;
 import us.dison.compactmachines.util.RoomUtil;
 import us.dison.compactmachines.util.TunnelUtil
-
+import net.minecraft.util.registry.Registry
+import net.minecraft.util.math.Direction.Axis
 class MachineBlock(settings: AbstractBlock.Settings, val machineSize: Option[MachineSize]) extends BlockWithEntity(settings): 
   
   private var lastInsidePlayerWarning = 0
@@ -82,8 +83,25 @@ class MachineBlock(settings: AbstractBlock.Settings, val machineSize: Option[Mac
                   case _ => 
                     CompactMachines.LOGGER.warn("Room doesn't have assigned size")
                     ActionResult.FAIL 
-              case _ =>
-                ActionResult.FAIL 
+              case item =>
+                CompactMachines.LOGGER.info(item.getRegistryEntry().isIn(CompactMachines.WRENCH_TAG))
+                if (item.getRegistryEntry().isIn(CompactMachines.WRENCH_TAG)) {
+                  CompactMachines.LOGGER.info("using wrench")
+                  val axis = hit.getSide().getAxis()
+                  val room = machineEntity.machineID.map(it => CompactMachines.roomManager.getRoomByNumber(it).get)
+                  val cmWorld = world.getServer().getWorld(CompactMachines.CMWORLD_KEY)
+                  room.foreach { room => 
+                    val newTunnels = room.tunnels.map(it => it.copy(face = it.face.rotateClockwise(axis)))
+                    for (tunnel <- newTunnels) {
+                      cmWorld.getBlockEntity(tunnel.pos) match {
+                        case tunnelEntity : TunnelWallBlockEntity => 
+                          tunnelEntity.tunnel = tunnel
+                        case _ => ()
+                      }
+                    }
+                  }
+                  ActionResult.SUCCESS
+                } else ActionResult.FAIL 
       else 
        if (world.getBlockEntity(pos).isInstanceOf[MachineBlockEntity] && (world.getRegistryKey() ne CompactMachines.CMWORLD_KEY)) { 
         val machineEntity = world.getBlockEntity(pos).asInstanceOf[MachineBlockEntity] 
@@ -214,7 +232,8 @@ class MachineBlock(settings: AbstractBlock.Settings, val machineSize: Option[Mac
     }
   }
     
-
+// sinful
+object MachineBlock 
     
 
 

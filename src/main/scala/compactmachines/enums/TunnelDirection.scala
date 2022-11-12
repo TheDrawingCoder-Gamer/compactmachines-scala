@@ -3,6 +3,7 @@ package us.dison.compactmachines.enums
 import net.minecraft.util.StringIdentifiable 
 import com.mojang.serialization.Codec 
 import net.minecraft.util.math.Direction 
+import Direction.Axis
 enum TunnelDirection(val direction: String) extends java.lang.Enum[TunnelDirection], StringIdentifiable derives CanEqual: 
   case North extends TunnelDirection("north")
   case East extends TunnelDirection("east")
@@ -22,6 +23,18 @@ enum TunnelDirection(val direction: String) extends java.lang.Enum[TunnelDirecti
       case Down => Option.apply(Direction.DOWN) 
       case NoDir => None
   end toDirection
+  def rotateClockwise(axis: Axis) = 
+    this match 
+      case NoDir => NoDir 
+      case _ => 
+        TunnelDirection.fromDirection(this.toDirection().get.rotateClockwise(axis))
+  def rotateCounterClockwise(axis : Axis) = 
+    this match {
+      case NoDir => NoDir 
+      case _ => 
+        TunnelDirection.fromDirection(this.toDirection().get.rotateCounterclockwise(axis))
+    } 
+  
   override def asString() = direction
 object TunnelDirection: 
   def byName(name: String) : Option[TunnelDirection] = 
@@ -30,6 +43,15 @@ object TunnelDirection:
     end for
     return None
   end byName
+  def fromDirection(dir : Direction) : TunnelDirection = 
+    dir match {
+      case Direction.NORTH => North 
+      case Direction.EAST => East 
+      case Direction.SOUTH => South 
+      case Direction.WEST => West 
+      case Direction.UP => Up 
+      case Direction.DOWN => Down 
+    }
   val CODEC : Codec[TunnelDirection] = StringIdentifiable.createCodec(() => TunnelDirection.values, TunnelDirection.byName(_).getOrElse(null))
 end TunnelDirection
 

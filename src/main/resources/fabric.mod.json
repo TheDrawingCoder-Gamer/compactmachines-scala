@@ -31,5 +31,11 @@
     "fabric": "*",
     "minecraft": "1.18.2",
     "fabric-language-scala": "*"
+  },
+  "custom": {
+    "waila:plugins": {
+      "id": "compactmachines:plugin", 
+      "initializer": "us.dison.compactmachines.compat.CompactWthitPlugin"
+    }
   }
 }

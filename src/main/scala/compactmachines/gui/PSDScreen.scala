@@ -23,7 +23,7 @@ class PSDScreen(title: Text) extends Screen(title):
     RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f)
     RenderSystem.setShaderTexture(0, PSDScreen.TEXTURE)
     val j : Int = (this.width - 256) / 2
-    val k : Int = (this.height - 256) / 2 - 32 
+    val k : Int = (this.height - 256) / 2 + 16 
     this.drawTexture(matrices, j, k, 0, 0, 256, 256);
     textRenderer.nn.drawWithShadow(matrices,
       TranslatableText(CompactMachines.MODID + ".psd.pages.machines.title"),
