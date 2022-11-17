@@ -27,6 +27,16 @@ import us.dison.compactmachines.data.persistent.tunnel.TunnelType;
 import java.util.UUID;
 import scala.language.unsafeNulls
 import us.dison.compactmachines.CompactMachines.*
+import net.fabricmc.fabric.api.event.client.ClientTickCallback
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents.StartWorldTick
+import net.minecraft.client.world.ClientWorld
+import us.dison.compactmachines.crafting.projector.HologramRenderer
+import net.fabricmc.fabric.api.renderer.v1.Renderer
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents.AfterEntities
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents.DebugRender
 @Environment(EnvType.CLIENT)
 object CompactMachinesClient extends ClientModInitializer: 
   override def onInitializeClient(): Unit =
@@ -81,6 +91,16 @@ object CompactMachinesClient extends ClientModInitializer:
             }
 
         , BLOCK_WALL_TUNNEL);
+        ClientTickEvents.START_WORLD_TICK.register(new StartWorldTick {
+          override def onStartTick(world: ClientWorld): Unit = {
+            HologramRenderer.tick()
+          }
+        })
+        WorldRenderEvents.BEFORE_DEBUG_RENDER.register(new DebugRender {
+          override def beforeDebugRender(x: WorldRenderContext): Unit = {
+            HologramRenderer.render(x.matrixStack())
+          }
+        })
         /*
         // Tint Tunnel items
         ColorProviderRegistry.ITEM.register((stack, tintIndex) => {

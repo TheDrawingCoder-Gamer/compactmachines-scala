@@ -8,6 +8,7 @@
   "contact": {},
   "license": "MIT",
   "icon": "assets/compactmachines/icon.png",
+  "accessWidener": "compactmachines.accesswidener",
   "environment": "*",
   "entrypoints": {
     "client": [

@@ -1,0 +1,9 @@
+{
+  "variants" : {
+    "facing=north": {"model": "compactmachines:block/field_projector" },
+    "facing=east": {"model": "compactmachines:block/field_projector", "y": 90 },
+    "facing=south": {"model": "compactmachines:block/field_projector", "y": 180 },
+    "facing=west": {"model": "compactmachines:block/field_projector", "y": 270 }
+    
+  }
+}

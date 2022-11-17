@@ -52,6 +52,8 @@ import us.dison.compactmachines.item.TunnelItem;
 import net.minecraft.tag.TagKey
 import java.util.function._
 import net.minecraft.block.entity.BlockEntity
+import us.dison.compactmachines.crafting.projector.ProjectBlock.apply
+import us.dison.compactmachines.crafting.projector.ProjectBlock
 
 object CompactMachines extends ModInitializer: 
   val MODID = "compactmachines" 
@@ -76,11 +78,10 @@ object CompactMachines extends ModInitializer:
   val ID_PSD = Identifier(MODID, "personal_shrinking_device") 
   val ID_REDSTONE_TUNNEL = Identifier(MODID, "redstone_tunnel") 
   val ID_TUNNEL = Identifier(MODID, "tunnel") 
-
+  val ID_PROJECTOR = Identifier(MODID, "projector")
   // Block settings 
   val SETTINGS_BLOCK_MACHINE = FabricBlockSettings.of(Material.METAL).nn.strength(4.0f).nn.requiresTool();
   val SETTINGS_BLOCK_WALL = FabricBlockSettings.of(Material.METAL).nn.strength(4.0f).nn.requiresTool();
-
   // Block 
   val BLOCK_MACHINE_TINY = MachineBlock(SETTINGS_BLOCK_MACHINE, Some(MachineSize.Tiny))
   val BLOCK_MACHINE_SMALL = MachineBlock(SETTINGS_BLOCK_MACHINE, Some(MachineSize.Small))
@@ -91,7 +92,8 @@ object CompactMachines extends ModInitializer:
   val BLOCK_WALL_UNBREAKABLE = MachineWallBlock(SETTINGS_BLOCK_WALL, false) 
   val BLOCK_WALL = MachineWallBlock(SETTINGS_BLOCK_WALL, true) 
   val BLOCK_WALL_TUNNEL = TunnelWallBlock(SETTINGS_BLOCK_WALL, false) 
-  
+  val BLOCK_PROJECTOR = ProjectBlock(SETTINGS_BLOCK_WALL) 
+
   val SETTINGS_ITEM = FabricItemSettings() 
   
   val ITEM_ITEM_TUNNEL = TunnelItem(SETTINGS_ITEM, Some(TunnelType.Normal)) 
@@ -105,8 +107,8 @@ object CompactMachines extends ModInitializer:
   val ITEM_MACHINE_MAXIMUM = BlockItem(BLOCK_MACHINE_MAXIMUM, SETTINGS_ITEM)
   val ITEM_WALL_UNBREAKABLE = BlockItem(BLOCK_WALL_UNBREAKABLE, SETTINGS_ITEM) 
   val ITEM_WALL = BlockItem(BLOCK_WALL, SETTINGS_ITEM) 
-  val ITEM_WALL_TUNNEL = BlockItem(BLOCK_WALL_TUNNEL, SETTINGS_ITEM)
-
+  // val ITEM_WALL_TUNNEL = BlockItem(BLOCK_WALL_TUNNEL, SETTINGS_ITEM)
+  val ITEM_PROJECTOR = BlockItem(BLOCK_PROJECTOR, SETTINGS_ITEM)
   val CM_ITEMGROUP = FabricItemGroupBuilder.create(Identifier(MODID, "title")).nn
     .icon(() => ItemStack(BLOCK_MACHINE_NORMAL)).nn
     .appendItems((badStacks : java.util.List[ItemStack]) => 
@@ -120,6 +122,7 @@ object CompactMachines extends ModInitializer:
           stacks.add(ItemStack(ITEM_MACHINE_MAXIMUM))
           stacks.add(ItemStack(ITEM_WALL_UNBREAKABLE))
           stacks.add(ItemStack(ITEM_WALL))
+          stacks.add(ItemStack(ITEM_PROJECTOR))
           // omitting wall tunnel on purpose 
           val redstoneStack = ItemStack(ITEM_REDSTONE_TUNNEL) 
           // redstoneStack.setSubNbt("type", NbtString.of(TunnelType.Redstone.tunnelName))
@@ -223,6 +226,7 @@ object CompactMachines extends ModInitializer:
     Registry.register(Registry.BLOCK, ID_WALL_UNBREAKABLE, BLOCK_WALL_UNBREAKABLE)
     Registry.register(Registry.BLOCK, ID_WALL, BLOCK_WALL)
     Registry.register(Registry.BLOCK, ID_WALL_TUNNEL, BLOCK_WALL_TUNNEL)
+    Registry.register(Registry.BLOCK, ID_PROJECTOR, BLOCK_PROJECTOR)
 
     Registry.register(Registry.ITEM, ID_TINY, ITEM_MACHINE_TINY) 
     Registry.register(Registry.ITEM, ID_SMALL, ITEM_MACHINE_SMALL) 
@@ -232,7 +236,8 @@ object CompactMachines extends ModInitializer:
     Registry.register(Registry.ITEM, ID_MAXIMUM, ITEM_MACHINE_MAXIMUM) 
     Registry.register(Registry.ITEM, ID_WALL_UNBREAKABLE, ITEM_WALL_UNBREAKABLE) 
     Registry.register(Registry.ITEM, ID_WALL, ITEM_WALL) 
-    Registry.register(Registry.ITEM, ID_WALL_TUNNEL, ITEM_WALL_TUNNEL) 
+    // Registry.register(Registry.ITEM, ID_WALL_TUNNEL, ITEM_WALL_TUNNEL) 
+    Registry.register(Registry.ITEM, ID_PROJECTOR, ITEM_PROJECTOR)
     Registry.register(Registry.ITEM, ID_TUNNEL, ITEM_ITEM_TUNNEL) 
     Registry.register(Registry.ITEM, ID_REDSTONE_TUNNEL, ITEM_REDSTONE_TUNNEL) 
     Registry.register(Registry.ITEM, ID_PSD, ITEM_PSD)

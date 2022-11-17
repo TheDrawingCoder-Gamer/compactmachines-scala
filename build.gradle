@@ -36,8 +36,13 @@ dependencies {
     // run against the full jar
     modRuntimeOnly "mcp.mobius.waila:wthit:fabric-${project.wthit_version}"
     modRuntimeOnly "lol.bai:badpackets:fabric-0.2.0"
-}
 
+    
+    
+}
+loom {
+   accessWidenerPath = file("src/main/resources/compactmachines.accesswidener")
+}
 processResources {
     inputs.property "version", project.version
     filteringCharset "UTF-8"
