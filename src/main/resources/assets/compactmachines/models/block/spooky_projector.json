@@ -1,0 +1,8 @@
+{
+	"parent": "compactmachines:block/field_projector.json",
+	"textures": {
+		"base": "compactmachines:block/spooky_projector_base",
+		"pole": "compactmachines:block/spooky_pole",
+		"3": "compactmachines:block/spooky_projector_monitor"
+	}
+}

@@ -41,6 +41,8 @@ import us.dison.compactmachines.client.CCRenderTypes
 import net.minecraft.block.Blocks
 import com.mojang.blaze3d.systems.RenderSystem
 import us.dison.compactmachines.CompactMachines
+import net.minecraft.state.property.BooleanProperty
+import net.minecraft.client.render.RenderLayer
 enum FieldSize(val fieldSize : String, val size : Int, val projectorDistance : Int) 
   extends java.lang.Enum[FieldSize] 
   with StringIdentifiable {
@@ -85,6 +87,8 @@ enum FieldSize(val fieldSize : String, val size : Int, val projectorDistance : I
 object FieldSize {
 
   def validSizes = List(Small, Medium, Large, Absurd)
+  def canFitDimensions(i : Int) = 
+    i <= Absurd.getDimensions && i >= Small.getDimensions
 }
 object ProjectBlock {
   val FACING = DirectionProperty.of("facing", Direction.Type.HORIZONTAL)
@@ -92,7 +96,7 @@ object ProjectBlock {
   val BASE = VoxelShapes.cuboid(0, 0, 0, 1, 6 / 16d, 1)
   val POLE = VoxelShapes.cuboid(7 / 16d, 6 / 16d, 7 / 16d, 9 / 16d, 14 / 16d, 9 / 16d)
   val SHAPE = VoxelShapes.union(BASE, POLE)
-  
+  val SPOOKY = BooleanProperty.of("spooky") 
   def getDirection(world : BlockView, pos : BlockPos) = {
     val state = world.getBlockState(pos) 
     state.getBlock() match {
@@ -154,7 +158,7 @@ object ProjectBlock {
     getSmallest(world, proj, dir).map { size => 
       val center = size.getCenterFromProjector(proj, dir)
       getMissingProjectorsSize(world, size, center) 
-    }.getOrElse(List())
+    }.getOrElse(getValidOppositePositions(proj, dir))
     
   }
   def getValidOppositePositions(pos : BlockPos, facing : Direction) = {
@@ -169,6 +173,7 @@ class ProjectBlock(settings : AbstractBlock.Settings) extends Block(settings)  {
   setDefaultState(stateManager.getDefaultState()
     .`with`(ProjectBlock.FACING, Direction.NORTH)
     .`with`(ProjectBlock.FIELD_SIZE, FieldSize.Inactive)
+    // .`with`(ProjectBlock.SPOOKY, false)
   )
   override def getOutlineShape(state : BlockState, levelReading : BlockView, pos : BlockPos, ctx : ShapeContext) = {
     ProjectBlock.SHAPE
@@ -225,13 +230,15 @@ object HologramRenderer {
         val camera = mc.gameRenderer.getCamera()
         val level = mc.world 
 
-        renderMissing(stack, buffers, camera, level)
+        renderMissing(stack, buffers, level)
       }
     }
+    
     protected[projector] def renderMissing(stack : MatrixStack, 
-                                        buffers : VertexConsumerProvider.Immediate, mainCamera : Camera, world : ClientWorld) : Unit = {
+                                        buffers : VertexConsumerProvider.Immediate, world : ClientWorld) : Unit = {
       stack.push()
-      val projectedView = mainCamera.getPos() 
+      val camera = MinecraftClient.getInstance().gameRenderer.getCamera()
+      val projectedView = camera.getPos()
       stack.translate(-projectedView.x, -projectedView.y, -projectedView.z)
       for ((pos, dir) <- missing) {
         stack.push()
@@ -261,17 +268,32 @@ object HologramRenderer {
           y -= 1
         }
       }
-      stack.pop()
-      RenderSystem.disableDepthTest()
+      // RenderSystem.disableDepthTest()
       buffers.draw(CCRenderTypes.PhantomRenderType)
-
+      // RenderSystem.enableDepthTest()
+      stack.pop()
     }
+    
+   /*
+    protected def renderMissing(stack : MatrixStack, buffers : VertexConsumerProvider.Immediate, world : ClientWorld) : Unit = {
+      stack.push()
+      val renderer = MinecraftClient.getInstance().getBlockRenderManager().getModelRenderer()
+      val manager = MinecraftClient.getInstance().getBakedModelManager()
+      val consumer = buffers.getBuffer(CCRenderTypes.PhantomRenderType)
+      for ((pos, dir) <- missing) {
+        val state = baseState.copy(ProjectBlock.FACING, dir)
+        val model = manager.getBlockModels().getModel(state)  
+        renderer.render(world, model, state, pos, stack, consumer, true, world.getRandom(), LightmapTextureManager.MAX_SKY_LIGHT_COORDINATE, OverlayTexture.DEFAULT_UV)
+      }
+      buffers.draw(CCRenderTypes.PhantomRenderType)
+      stack.pop()
+    } */
     def setProjector(world : World, initial : BlockPos) = {
       missing.clear()
       val initialFacing = ProjectBlock.getDirection(world, initial).getOrElse(Direction.UP)
       val fieldSize = ProjectBlock.getSmallest(world, initial, initialFacing)
       fieldSize match {
-        case Some(size) => 
+        case Some(size) =>
           val center = size.getCenterFromProjector(initial, initialFacing)
           Direction.Type.HORIZONTAL.forEach { dir => 
             if (dir.getOpposite() != initialFacing) {

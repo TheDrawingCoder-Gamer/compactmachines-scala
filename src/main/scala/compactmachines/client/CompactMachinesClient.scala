@@ -37,6 +37,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents.AfterEntities
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents.DebugRender
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents.AfterTranslucent
 @Environment(EnvType.CLIENT)
 object CompactMachinesClient extends ClientModInitializer: 
   override def onInitializeClient(): Unit =
@@ -96,8 +97,8 @@ object CompactMachinesClient extends ClientModInitializer:
             HologramRenderer.tick()
           }
         })
-        WorldRenderEvents.BEFORE_DEBUG_RENDER.register(new DebugRender {
-          override def beforeDebugRender(x: WorldRenderContext): Unit = {
+        WorldRenderEvents.AFTER_TRANSLUCENT.register(new AfterTranslucent {
+          override def afterTranslucent(x: WorldRenderContext) = {
             HologramRenderer.render(x.matrixStack())
           }
         })
