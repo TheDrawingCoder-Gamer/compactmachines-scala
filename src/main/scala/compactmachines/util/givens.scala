@@ -21,7 +21,8 @@ extension (axis : Axis) {
 }
 extension (state : BlockState) {
   def copy[T <: Comparable[T]](prop : Property[T], value : T) = {
-    state.`with`(prop, value)
+    state.`with`[T, T](prop, value)
+
   }
 }
 class OptionFieldCodec[A](private val name : String, private val elementCodec : Codec[A]) extends MapCodec[Option[A]] {

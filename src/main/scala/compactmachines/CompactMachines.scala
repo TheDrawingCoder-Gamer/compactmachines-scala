@@ -53,8 +53,8 @@ import net.minecraft.tag.TagKey
 import java.util.function._
 import net.minecraft.block.entity.BlockEntity
 import us.dison.compactmachines.crafting.projector.ProjectBlock.apply
-import us.dison.compactmachines.crafting.projector.ProjectBlock
-// import us.dison.compactmachines.crafting.LayerTypeImpl
+import us.dison.compactmachines.crafting.projector.{ProjectBlock, ProjectorBlockEntity}
+import us.dison.compactmachines.crafting.Registrar
 import us.dison.compactmachines.crafting.recipes.layers.{FilledComponentRecipeLayer, HollowComponentRecipeLayer, MixedComponentRecipeLayer}
 import net.fabricmc.loader.api.FabricLoader
 import us.dison.compactmachines.api.crafting.CompactCraftingPlugin
@@ -147,6 +147,8 @@ object CompactMachines extends ModInitializer:
     BLOCK_MACHINE_MAXIMUM).build(null)).nn
   lazy val TUNNEL_WALL_BLOCK_ENTITY : BlockEntityType[TunnelWallBlockEntity] = Registry.register(Registry.BLOCK_ENTITY_TYPE, MODID + ":tunnel_wall_block_entity", FabricBlockEntityTypeBuilder.create(TunnelWallBlockEntity.apply(_, _), BLOCK_WALL_TUNNEL).build(null)).nn 
   lazy val MACHINE_WALL_BLOCK_ENTITY : BlockEntityType[MachineWallBlockEntity] = Registry.register(Registry.BLOCK_ENTITY_TYPE, MODID + ":machine_wall_block_entity", FabricBlockEntityTypeBuilder.create(MachineWallBlockEntity.apply(_, _), BLOCK_WALL_UNBREAKABLE).build(null)).nn
+  lazy val PROJECTOR_BLOCK_ENTITY : BlockEntityType[ProjectorBlockEntity] = Registry.register(Registry.BLOCK_ENTITY_TYPE, MODID + ":projector_block_entity", 
+    FabricBlockEntityTypeBuilder.create(ProjectorBlockEntity(_, _), BLOCK_PROJECTOR).build(null))
   val ID_MINITURIZATION_RECIPE= Identifier(MODID, "miniturization_recipe")
   val TYPE_MINITURIZATION_RECIPE = CCBaseRecipeType(ID_MINITURIZATION_RECIPE) 
   private var roomManagerVar : Option[RoomManager] = Option.empty
@@ -173,10 +175,13 @@ object CompactMachines extends ModInitializer:
     // LayerTypeImpl.register(Identifier(MODID, "filled"), FilledComponentRecipeLayer)
     // LayerTypeImpl.register(Identifier(MODID, "hollow"), HollowComponentRecipeLayer)
     // LayerTypeImpl.register(Identifier(MODID, "mixed"), MixedComponentRecipeLayer)
-    FabricLoader.getInstance().getEntrypoints[CompactCraftingPlugin]("compactmachines:plugin", classOf[CompactCraftingPlugin])
+    FabricLoader.getInstance().getEntrypoints[CompactCraftingPlugin]("compactmachines:plugin", classOf[CompactCraftingPlugin]).forEach { it => 
+      it.register(Registrar)
+    }
     MACHINE_BLOCK_ENTITY 
     MACHINE_WALL_BLOCK_ENTITY
     TUNNEL_WALL_BLOCK_ENTITY
+    PROJECTOR_BLOCK_ENTITY
     def internalHelper[T](connectedSetter: (TunnelWallBlockEntity, Boolean) => Unit, targetGetter: TunnelWallBlockEntity => Option[T], machineEntity : MachineBlockEntity, direction: Direction | Null):T | Null  =
       LOGGER.info(machineEntity.machineID)
       machineEntity.machineID.flatMap(roomManager.getRoomByNumber(_)).flatMap(room =>

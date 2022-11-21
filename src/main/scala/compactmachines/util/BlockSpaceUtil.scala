@@ -23,7 +23,7 @@ object BlockSpaceUtil {
       Box.of(Vec3d.ZERO,0,0,0)
     else {
       val iterable : java.lang.Iterable[BlockPos] = filled.asJava
-      val trimmedBounds : Option[BlockBox] = BlockBox.encompassPositions(iterable).asScala
+      val trimmedBounds : Option[BlockBox] = BlockBox.encompassPositions(iterable).toScala
       trimmedBounds.map(it => Box.from(it)).getOrElse(Box.of(Vec3d.ZERO,0,0,0))
     }
   }

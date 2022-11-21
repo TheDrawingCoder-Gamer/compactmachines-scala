@@ -1,0 +1,28 @@
+{
+  "type": "compactmachines:miniturization_recipe",
+  "recipeSize" 3,
+  "layers": [
+    {
+      "type": "compactmachines:filled",
+      "component": "W"
+    },
+    {
+      "type": "compactmachines:hollow",
+      "component": "W"
+    },
+    {
+      "type": "compactmachines:filled",
+      "component": "W"
+    }
+  ],
+  "components": {
+    "W" :{
+      "type": "compactcrafting:block",
+      "block": "compactmachines:wall"
+    }
+  },
+  "catalyst" : {
+    "id": "minecraft:ender_pearl",
+    "Count": 1
+  }
+}

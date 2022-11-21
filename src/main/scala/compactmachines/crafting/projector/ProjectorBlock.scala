@@ -16,6 +16,7 @@ import net.minecraft.block.ShapeContext
 import net.minecraft.block.BlockEntityProvider
 import net.minecraft.state.StateManager.Builder
 import scala.jdk.CollectionConverters._
+import scala.jdk.StreamConverters._
 import us.dison.compactmachines.util._
 import scala.math.Ordering.Implicits.infixOrderingOps
 import net.minecraft.item.ItemPlacementContext
@@ -43,6 +44,26 @@ import com.mojang.blaze3d.systems.RenderSystem
 import us.dison.compactmachines.CompactMachines
 import net.minecraft.state.property.BooleanProperty
 import net.minecraft.client.render.RenderLayer
+import us.dison.compactmachines.api.crafting.field.FieldSize; 
+import FieldSizeExt._
+import net.minecraft.item.ItemStack
+import net.minecraft.entity.LivingEntity
+import net.minecraft.world
+import net.minecraft.block.entity.BlockEntity
+import net.minecraft.block.entity
+import us.dison.compactmachines.crafting.field.*
+import net.minecraft.server.world.ServerWorld
+import us.dison.compactmachines.api.crafting.field.IMiniaturizationField
+object FieldSizeExt {
+  extension (fs : FieldSize) {
+    def fieldSize = fs.name()
+    def projectorPoses = fs.getProjectorPoses().toScala(List)
+    def projectorPosesAt(pos : BlockPos) = fs.getProjectorPosesAt(pos).toScala(List)
+    def originCenter = fs.getOriginCenter()
+    def projectorPosesAxis(center : BlockPos, axis : Direction.Axis) = fs.getProjectorPosesOnAxis(center, axis).toScala(List)
+  }
+}
+/*
 enum FieldSize(val fieldSize : String, val size : Int, val projectorDistance : Int) 
   extends java.lang.Enum[FieldSize] 
   with StringIdentifiable {
@@ -90,9 +111,11 @@ object FieldSize {
   def canFitDimensions(i : Int) = 
     i <= Absurd.getDimensions && i >= Small.getDimensions
 }
+*/ 
+
 object ProjectBlock {
   val FACING = DirectionProperty.of("facing", Direction.Type.HORIZONTAL)
-  val FIELD_SIZE = EnumProperty.of("field_size", classOf[FieldSize])
+  val FIELD_SIZE : EnumProperty[FieldSize] = EnumProperty.of("field_size", classOf[FieldSize])
   val BASE = VoxelShapes.cuboid(0, 0, 0, 1, 6 / 16d, 1)
   val POLE = VoxelShapes.cuboid(7 / 16d, 6 / 16d, 7 / 16d, 9 / 16d, 14 / 16d, 9 / 16d)
   val SHAPE = VoxelShapes.union(BASE, POLE)
@@ -132,13 +155,14 @@ object ProjectBlock {
     }
   }
   def getSmallestOpposite(world : BlockView, initial : BlockPos, facing : Direction) = {
-    FieldSize.validSizes.find( it => hasProjectorOpposite(world, initial, it, facing))
+    FieldSize.VALID_SIZES.find( it => hasProjectorOpposite(world, initial, it, facing))
   }
   def getSmallestCross(world : BlockView, initial : BlockPos, facing : Direction) = {
-    FieldSize.validSizes.find( it => hasValidCross(world, initial, it, facing))
+    FieldSize.VALID_SIZES.find( it => hasValidCross(world, initial, it, facing))
   }
 
-
+  def getFieldCenter(state : BlockState, projector : BlockPos) = 
+    state.get(FIELD_SIZE).getCenterFromProjector(projector, state.get(FACING))
   def getSmallest(world : BlockView, initial : BlockPos, facing : Direction) = {
     val smallOpp = getSmallestOpposite(world, initial, facing)
     val smallCross = getSmallestCross(world, initial, facing)
@@ -148,7 +172,7 @@ object ProjectBlock {
       case (None, None)    => None 
       case (Some(a), Some(b)) => 
         // min
-        Some(a.min(b))
+        Some(if (a.compareTo(b) <= 0) a else b )
     }
   }
   def getMissingProjectorsSize(world : BlockView, size : FieldSize, center : BlockPos) = {
@@ -162,17 +186,37 @@ object ProjectBlock {
     
   }
   def getValidOppositePositions(pos : BlockPos, facing : Direction) = {
-    FieldSize.validSizes.map(it => it.getOppositeProjector(pos, facing))
+    FieldSize.VALID_SIZES.map(it => it.getOppositeProjector(pos, facing)).toList
   }
   def isActive(state : BlockState) = {
-    state.get(FIELD_SIZE) != FieldSize.Inactive
+    state.get[FieldSize](FIELD_SIZE) != FieldSize.INACTIVE
+  }
+  def activateProjector(level : World, pos : BlockPos, fieldSize : FieldSize) = {
+    if (level.isChunkLoaded(pos)) {
+      val state =level.getBlockState(pos)
+      state.getBlock() match {
+        case _ : ProjectBlock => 
+          if (state.get(FIELD_SIZE) != fieldSize) {
+            val newState = state.copy(FIELD_SIZE, fieldSize)
+            level.setBlockState(pos, newState, Block.NOTIFY_ALL)
+          }
+      }
+    }
+  }
+  def deactivateProjector(level : World, pos : BlockPos) = {
+    val curState = level.getBlockState(pos) 
+    curState.getBlock() match {
+      case _ : ProjectBlock => 
+        val newState = curState.copy(FIELD_SIZE, FieldSize.INACTIVE)
+        level.setBlockState(pos, newState, Block.NOTIFY_ALL)
+    }
   }
 }
 
-class ProjectBlock(settings : AbstractBlock.Settings) extends Block(settings)  {
+class ProjectBlock(settings : AbstractBlock.Settings) extends Block(settings) with BlockEntityProvider {
   setDefaultState(stateManager.getDefaultState()
     .`with`(ProjectBlock.FACING, Direction.NORTH)
-    .`with`(ProjectBlock.FIELD_SIZE, FieldSize.Inactive)
+    .`with`[FieldSize, FieldSize](ProjectBlock.FIELD_SIZE, FieldSize.INACTIVE)
     // .`with`(ProjectBlock.SPOOKY, false)
   )
   override def getOutlineShape(state : BlockState, levelReading : BlockView, pos : BlockPos, ctx : ShapeContext) = {
@@ -193,11 +237,11 @@ class ProjectBlock(settings : AbstractBlock.Settings) extends Block(settings)  {
      Option(ctx.getPlayer()).map( it => if it.isSneaking() then ctx.getPlayerFacing().getOpposite() else ctx.getPlayerFacing()).getOrElse(ctx.getPlayerFacing())
    val missing = ProjectBlock.getMissingProjectors(level, pos, looking)
    val hasMissing = missing.exists(_ != pos)
-   getDefaultState().copy(ProjectBlock.FACING, looking).copy(ProjectBlock.FIELD_SIZE, {
+   getDefaultState().copy(ProjectBlock.FACING, looking).copy[FieldSize](ProjectBlock.FIELD_SIZE, {
       if (hasMissing) {
-        FieldSize.Inactive 
+        FieldSize.INACTIVE 
       } else {
-        ProjectBlock.getSmallestOpposite(level, pos, looking).getOrElse(FieldSize.Inactive)
+        ProjectBlock.getSmallestOpposite(level, pos, looking).getOrElse(FieldSize.INACTIVE)
       }
    })
   }
@@ -212,6 +256,100 @@ class ProjectBlock(settings : AbstractBlock.Settings) extends Block(settings)  {
     }
     ActionResult.SUCCESS
   }
+
+  override def onBlockAdded(state : BlockState, world : World, pos: BlockPos, oldState: BlockState, b: Boolean): Unit = {
+    if (!ProjectBlock.isActive(state)) 
+      return 
+    val size = state.get(ProjectBlock.FIELD_SIZE)
+    val fieldcenter = size.getCenterFromProjector(pos, state.get(ProjectBlock.FACING))
+
+    val hasMissing = ProjectBlock.getMissingProjectors(world, pos, state.get(ProjectBlock.FACING)).nonEmpty
+
+    if (hasMissing) {
+      world.setBlockState(pos, state.copy(ProjectBlock.FIELD_SIZE, FieldSize.INACTIVE), Block.NOTIFY_ALL)
+    } else {
+      val server = world.getServer()
+      if (server == null) 
+        return 
+      if (world.isRegionLoaded(fieldcenter.getX(), fieldcenter.getZ(), fieldcenter.getX() + size.getProjectorDistance(), fieldcenter.getZ() + size.getProjectorDistance())) {
+        size.getProjectorPosesAt(fieldcenter).forEach( proj => ProjectBlock.activateProjector(world, proj, size))
+
+
+        val center = ProjectBlock.getFieldCenter(state, pos)
+
+        val fields = ActiveWorldFields.get(world)
+        if (!fields.hasActiveField(center)) {
+          val field = fields.registerField(MiniaturizationField.ofSizeAndCenter(size,center))
+          field.checkLoaded()
+          field.fieldContentsChanged()
+
+          // TODO: Networking 
+        }
+
+      }
+    }
+  }
+  override def onStateReplaced(state: BlockState, world: net.minecraft.world.World, pos: BlockPos, newState: BlockState, moved: Boolean): Unit = {
+    val center = ProjectBlock.getFieldCenter(state, pos)
+    val size = state.get(ProjectBlock.FIELD_SIZE)
+
+    if (ProjectBlock.isActive(state)) {
+      size.getProjectorPosesAt(center).forEach(proj => ProjectBlock.deactivateProjector(world, proj))
+
+      if (!world.isClient()) {
+        val serverWorld = world.asInstanceOf[ServerWorld] 
+        val fields = ActiveWorldFields.get(serverWorld)
+        if (fields.hasActiveField(center)) {
+          val field = fields.get(center)
+          field match {
+            case Some(fl) => 
+              if (fl.enabled()) {
+                fields.unregisterField(center)
+                fl.handleDestabilize()
+                fl.cleanForDisposal()
+              }
+            case None => ()
+          }
+        }
+      }
+    }
+  }
+  override def createBlockEntity(pos: BlockPos, state: BlockState): net.minecraft.block.entity.BlockEntity = {
+    ProjectorBlockEntity(pos, state)
+  }
+
+  override def neighborUpdate(state: BlockState, world: net.minecraft.world.World, pos: BlockPos, block: Block, fromPos: BlockPos, notify: Boolean): Unit = {
+    super.neighborUpdate(state, world, pos, block, fromPos, notify)
+
+    if (world.isClient) 
+      return 
+
+    if (ProjectBlock.isActive(state)) {
+      val tile = world.getBlockEntity(pos) 
+      tile match {
+        case fpt : ProjectorBlockEntity => 
+          if (world.getReceivedRedstonePower(pos) > 0) {
+            fpt.fieldRef.foreach(_.disable())
+
+          } else {
+            fpt.fieldRef.foreach(_.checkRedstone())
+          }
+      }
+    } else {
+      ProjectBlock.getSmallestOpposite(world, pos, state.get(ProjectBlock.FACING)).foreach { size => 
+        val center : BlockPos = size.getCenterFromProjector(pos, state.get(ProjectBlock.FACING))
+        val fields = ActiveWorldFields.get(world)
+        fields.get(center).foreach(_.checkRedstone)
+
+      }
+    }
+  }
+  
+}
+
+class ProjectorBlockEntity(pos : BlockPos, state : BlockState) extends BlockEntity(CompactMachines.PROJECTOR_BLOCK_ENTITY, pos, state) {
+  // No need to serialize, field sets it
+  var fieldRef : Option[IMiniaturizationField] = None 
 }
 object HologramRenderer { 
     private var renderTime = 0

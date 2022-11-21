@@ -46,7 +46,6 @@ class RoomManager extends PersistentState:
   def addRoom(room: Room): Unit = 
     require(!existsRoomByNumber(room.number), "Room already exists with number: " + room.number.toString)
     rooms.addOne(room)
-    
     markDirty()
 
   def updateOwner(id: Int, uuid: String): Unit = 

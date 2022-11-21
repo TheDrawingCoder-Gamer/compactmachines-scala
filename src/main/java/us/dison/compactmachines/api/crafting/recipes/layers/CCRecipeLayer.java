@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 import net.minecraft.util.math.BlockPos;
-import us.dison.compactmachines.crafting.components.IRecipeComponents;
+import us.dison.compactmachines.api.crafting.components.IRecipeComponents;
 import us.dison.compactmachines.api.crafting.recipes.layers.CCRecipeBlocks;
 import us.dison.compactmachines.api.crafting.recipes.layers.RecipeLayerType ;
 public interface CCRecipeLayer {

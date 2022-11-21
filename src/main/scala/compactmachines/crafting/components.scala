@@ -8,6 +8,7 @@ import net.minecraft.state.StateManager
 import java.util.stream.Collectors
 import scala.jdk.StreamConverters._
 import scala.jdk.CollectionConverters._
+import scala.jdk.OptionConverters._
 import net.minecraft.util.registry.Registry
 import com.mojang.serialization.DataResult
 import com.mojang.serialization.DynamicOps
@@ -17,6 +18,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder
 import us.dison.compactmachines.util.{ScalaListCodec, ScalaMapCodec}
 import us.dison.compactmachines.CompactMachines
 import net.minecraft.block.Blocks
+import us.dison.compactmachines.api.crafting.components.*
+/*
 trait IRecipeComponent {
   // why ?
   def getType() : RecipeComponentType[?]
@@ -28,6 +31,7 @@ trait IRecipeBlockComponent extends IRecipeComponent {
   def didErrorRendering() : Boolean 
   def markRenderingError() : Unit 
 }
+*/
 class BlockComponent(private val block : Block, propertyRequirements : Map[String, List[String]] = null ) extends IRecipeBlockComponent {
   private val validStates = mutable.Set[BlockState]()
   private var renderError = false 
@@ -115,9 +119,11 @@ class EmptyBlockComponent extends IRecipeComponent, IRecipeBlockComponent {
 object EmptyBlockComponent {
   val codec = Codec.unit(() => EmptyBlockComponent())
 }
+/* 
 trait RecipeComponentType[C <: IRecipeComponent] {
   def getCodec() : Codec[C]
 }
+*/
 class SimpleRecipeComponentType[C <: IRecipeComponent](private val s : Codec[C]) extends RecipeComponentType[C] {
   override def getCodec() = s
 }
@@ -154,31 +160,46 @@ object RecipeComponentTypeCodec extends Codec[RecipeComponentType[?]] {
     }
   }
 }
-trait IRecipeComponents {
-  def getAllComponents() : Map[String, IRecipeComponent]
-  def getBlockComponents() : Map[String, IRecipeBlockComponent]
-  def isEmptyBlock(key : String) : Boolean 
-  def getBlock(key : String) : Option[IRecipeBlockComponent]
-  def hasBlock(key : String) : Boolean 
-  def registerBlock(key : String, component : IRecipeBlockComponent) : Unit 
-  def unregisterBlock(key : String) : Unit 
-  def registerOther(key : String, component : IRecipeComponent) : Unit 
-  def size() : Int 
-  def clear() : Unit 
-  def getKey(state : BlockState) : Option[String]
-  def getEmptyComponents() : List[String]
+trait TRecipeComponents extends IRecipeComponents {
+  override def getAllComponents() = 
+    allComponents.asJava
+  def allComponents : Map[String, IRecipeComponent]
+  override def getBlockComponents() = 
+    blockComponents.asJava
+  def blockComponents : Map[String, IRecipeBlockComponent]
+  override def getBlock(key : String) = 
+    blockFor(key).toJava 
+  def blockFor(key : String) : Option[IRecipeBlockComponent]
+  override def getKey(state : BlockState) = keyFor(state).toJava 
+  def keyFor(state : BlockState) : Option[String] 
+  def getEmptyComponents() = 
+    emptyComponents.asJavaSeqStream
+  def emptyComponents : Iterable[String] 
 }
-
-class MiniturizationRecipeComponents extends IRecipeComponents {
-  private val blockComponents = mutable.HashMap[String, IRecipeBlockComponent]()
+object IRecipeComponentsExt {
+  extension (rc : IRecipeComponents) {
+    def allComponents : Map[String, IRecipeComponent] = 
+      rc.getAllComponents().asScala.toMap 
+    def blockComponents : Map[String, IRecipeBlockComponent] =
+      rc.getBlockComponents().asScala.toMap
+    def blockFor(key : String) : Option[IRecipeBlockComponent] = 
+      rc.getBlock(key).toScala 
+    def keyFor(state : BlockState) = 
+      rc.getKey(state).toScala 
+    def emptyComponents = 
+      rc.getEmptyComponents().toScala(List)
+  }
+}
+class MiniturizationRecipeComponents extends TRecipeComponents {
+  private val intlblockComponents = mutable.HashMap[String, IRecipeBlockComponent]()
   private val otherComponents = mutable.HashMap[String, IRecipeComponent]()
-  override def getAllComponents(): Map[String, IRecipeComponent] = {
+  override def allComponents: Map[String, IRecipeComponent] = {
     blockComponents.toMap ++ otherComponents.toMap
   }
-  override def getBlockComponents(): Map[String, IRecipeBlockComponent] = 
-    blockComponents.toMap 
+  override def blockComponents: Map[String, IRecipeBlockComponent] = 
+    intlblockComponents.toMap 
   override def isEmptyBlock(key: String): Boolean = {
-    blockComponents.get(key) match {
+    intlblockComponents.get(key) match {
       case None => true 
       case Some(comp) => 
         comp.isInstanceOf[EmptyBlockComponent]
@@ -186,22 +207,22 @@ class MiniturizationRecipeComponents extends IRecipeComponents {
   }
   override def hasBlock(key: String): Boolean = blockComponents.contains(key)
   override def registerBlock(key: String, component: IRecipeBlockComponent): Unit = 
-    blockComponents.put(key, component)
+    intlblockComponents.put(key, component)
   override def unregisterBlock(key: String): Unit = 
-    blockComponents.remove(key)
+    intlblockComponents.remove(key)
   override def clear(): Unit = {
-    blockComponents.clear()
+    intlblockComponents.clear()
     otherComponents.clear()
   }
-  override def getBlock(key: String): Option[IRecipeBlockComponent] = {
+  override def blockFor(key: String): Option[IRecipeBlockComponent] = {
     blockComponents.get(key)
   }
-  override def getEmptyComponents(): List[String] = {
+  override def emptyComponents = {
     blockComponents.toMap.filter {
       case (k, v) => v.isInstanceOf[EmptyBlockComponent]
-    }.keys.toList
+    }.keys
   }
-  override def getKey(state: BlockState): Option[String] = {
+  override def keyFor(state: BlockState): Option[String] = {
     blockComponents.find{
       case (k, v) => 
         v.matches(state)

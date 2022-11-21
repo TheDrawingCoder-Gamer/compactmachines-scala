@@ -1,11 +1,14 @@
 package us.dison.compactmachines.crafting.recipes 
 
 import us.dison.compactmachines.crafting.catalyst.*
+import us.dison.compactmachines.api.crafting.catalyst.*;
 import net.minecraft.item.ItemStack
 import net.minecraft.util.Identifier
 // import us.dison.compactmachines.crafting.recipes.layers.CCRecipeLayer
 import us.dison.compactmachines.api.crafting.recipes.layers.CCRecipeBlocks
 import us.dison.compactmachines.crafting.components.*
+import us.dison.compactmachines.api.crafting.components.*;
+
 import net.minecraft.util.math.Box
 import us.dison.compactmachines.crafting.recipes.layers.dim.IDynamicSizedRecipeLayer
 import net.minecraft.util.math.Vec3d
@@ -36,7 +39,7 @@ import net.minecraft.util.registry.Registry
 import us.dison.compactmachines.api.crafting.recipes.layers.{CCRecipeLayer, RecipeLayerType, CCSymmetricLayer}
 import net.minecraft.util.BlockRotation
 import java.util.Arrays
-import us.dison.compactmachines.crafting.projector.FieldSize
+import us.dison.compactmachines.api.crafting.field.FieldSize
 import com.mojang.datafixers.util.Pair
 import com.mojang.serialization.Lifecycle
 import java.util.Collections
@@ -46,6 +49,9 @@ import com.google.gson.JsonObject
 import net.minecraft.network.PacketEncoderException
 import io.netty.handler.codec.EncoderException
 import net.minecraft.network.PacketByteBuf
+import us.dison.compactmachines.crafting.components.IRecipeComponentsExt._
+import us.dison.compactmachines.api.crafting.IMiniaturizationRecipe
+import net.minecraft.world.WorldView
 package blocks {
   class ComponentPositionLookup {
     protected[recipes] val components : mutable.Map[BlockPos, String] = mutable.Map[BlockPos, String]()
@@ -133,7 +139,6 @@ package layers {
 
   import net.minecraft.block.BlockState
   import net.minecraft.util.math.Vec3i
-  import us.dison.compactmachines.crafting.projector.FieldSize
   /*
   trait RecipeLayerType[L <: CCRecipeLayer] {
     def getCodec() : Codec[L]
@@ -270,6 +275,24 @@ package layers {
       blocks.lookup.components ++= components 
       blocks.unmatchedStates ++= unmatchedStates
       blocks
+    }
+    def create(blocks : WorldView, components : IRecipeComponents, bounds : Box) = {
+        val instance = RecipeBlocks(bounds)
+        BlockSpaceUtil.getBlocksIn(bounds).map(_.toImmutable).foreach { pos => 
+
+          val state = blocks.getBlockState(pos)
+
+          instance.states.put(pos, state)
+
+          val compKey = components.getKey(state).toScala
+          compKey match {
+            case Some(ck) => 
+              instance.lookup.add(pos, ck)
+            case None => 
+              instance.unmatchedStates += pos
+          }
+        }
+        instance
     }
     def rotate(og : CCRecipeBlocks, rotation : BlockRotation) : RecipeBlocks = {
       import us.dison.compactmachines.crafting.recipes.layers._
@@ -419,7 +442,7 @@ package layers {
     override def getDimensions() = dimensions
     override def getComponents() = componentLookup.getComponents().asJava
     override def dropNonRequiredComponents(components: IRecipeComponents): Unit = {
-      components.getEmptyComponents().foreach(it => componentLookup.remove(it))
+      components.getEmptyComponents().forEach(it => componentLookup.remove(it))
       val definedKeys = components.getBlockComponents().keySet 
       val toRemove = componentLookup.getComponents()
         .filter(layerComp => !definedKeys.contains(layerComp))
@@ -507,16 +530,26 @@ package layers {
     }
   }
 }
-
-trait IMiniaturizationRecipe {
+trait TMiniaturizationRecipe extends IMiniaturizationRecipe {
+  override def getCatalyst() = catalyst 
   def catalyst : ICatalystMatcher 
+  override def getOutputs() = outputs.toArray
   def outputs : List[ItemStack]
+  override def getRecipeId() = identifier 
   def identifier : Identifier
+  override def getCraftingTime() = craftingTime 
   def craftingTime : Int 
+  override def getDimensions() = dimensions 
   def dimensions : Box 
-  def getLayer(layer : Int) : Option[CCRecipeLayer]
+  override def getLayer(layer : Int) = getLayerAt(layer).toJava 
+  def getLayerAt(layer : Int) : Option[CCRecipeLayer]
+  override def getComponents() = components 
   def components : IRecipeComponents
+  override def setOutputs(outputs : java.util.Collection[ItemStack]) = 
+    this.outputs = outputs.asScala.toList
   def outputs_=(outputs : List[ItemStack]) : Unit 
+  override def getLayers() = 
+    layers.asJavaSeqStream
   def layers : List[CCRecipeLayer]
 }
 trait EmptyInventory extends Inventory {
@@ -541,7 +574,7 @@ trait CCRecipeBase extends Recipe[EmptyInventory] {
   def setId(recipeId : Identifier) : Unit
 }
 import scala.beans.BeanProperty
-class MiniturizationRecipe extends CCRecipeBase with IMiniaturizationRecipe {
+class MiniturizationRecipe extends CCRecipeBase with TMiniaturizationRecipe {
   private var recipeSize = -1 
   @BeanProperty
   private var id : Identifier = null 
@@ -554,7 +587,7 @@ class MiniturizationRecipe extends CCRecipeBase with IMiniaturizationRecipe {
   override def identifier: Identifier = id 
   // override def setId(recipeId: Identifier): Unit = id = recipeId 
   override def dimensions = intldimensions
-  override def getLayer(layer: Int) : Option[CCRecipeLayer] = 
+  override def getLayerAt(layer: Int) : Option[CCRecipeLayer] = 
     layersMap.get(layer)
   override def layers: List[CCRecipeLayer] = layersMap.values.toList
   override def craftingTime: Int = 200
@@ -672,7 +705,7 @@ class MiniturizationRecipe extends CCRecipeBase with IMiniaturizationRecipe {
       this.cachedComponentTotals
     else {
       val totals = mutable.HashMap[String, Int]()
-      components.getAllComponents().keySet.foreach { comp =>
+      components.allComponents.keySet.foreach { comp =>
         val count = getComponentRequiredCount(comp)
         totals.put(comp, count)
       }
@@ -819,7 +852,7 @@ object MiniturizationRecipeCodec extends Codec[MiniturizationRecipe] {
     } else {
       val layers = layerCodec.listOf().encodeStart(ops, recipe.getLayerListForCodecWrite().asJava)
       val components = Codec.unboundedMap(Codec.STRING, componentCodec)
-        .encodeStart(ops, recipe.components.getAllComponents().asJava)
+        .encodeStart(ops, recipe.components.getAllComponents())
       val catalystItem = recipe.catalyst 
       val catalyst :Option[DataResult[T]] = 
         if (catalystItem != null) {

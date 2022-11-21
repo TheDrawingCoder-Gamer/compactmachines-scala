@@ -17,30 +17,32 @@ import scala.jdk.CollectionConverters._
 import com.mojang.serialization.DataResult
 import com.mojang.serialization.DynamicOps
 import com.mojang.datafixers.util.Pair
-trait ICatalystMatcher {
-  def matches(stack : ItemStack) : Boolean 
-  def getPossible() : Set[ItemStack]
-  def getType() : CatalystType[?]
+import us.dison.compactmachines.api.crafting.catalyst.*
+trait TCatalystMatcher extends ICatalystMatcher {
+  def possible : Set[ItemStack]
+  override def getPossible() = possible.asJava
 } 
+/* 
 trait CatalystType[M <: ICatalystMatcher] {
   def getCodec() : Codec[M]
 }
-class ItemStackCatalystMatcher protected (val item : Item, val nbtMatcher : ItemStack => Boolean, val nbtTag : Option[NbtCompound]) extends ICatalystMatcher {
+*/
+class ItemStackCatalystMatcher protected (val item : Item, val nbtMatcher : ItemStack => Boolean, val nbtTag : Option[NbtCompound]) extends TCatalystMatcher {
   private def getNbtTag() = nbtTag
   def matches(stack: ItemStack): Boolean = {
     stack.getItem() == item && nbtMatcher(stack)
   }
   override def getType(): CatalystType[?] = CatalystRegistry.ITEM_STACK_CATALYST
-  override def getPossible(): Set[ItemStack] = Set(ItemStack(item).tap(x=> nbtTag.foreach(it => x.setNbt(it))))
+  override def possible: Set[ItemStack] = Set(ItemStack(item).tap(x=> nbtTag.foreach(it => x.setNbt(it))))
 }
-class ItemTagCatalystMatcher (val tag : TagKey[Item]) extends ICatalystMatcher{
+class ItemTagCatalystMatcher (val tag : TagKey[Item]) extends TCatalystMatcher{
   override def matches(stack: ItemStack): Boolean = {
     if (tag == null)
       true 
     else 
       stack.isIn(tag)
   }
-  override def getPossible(): Set[ItemStack] = {
+  override def possible: Set[ItemStack] = {
     if (tag == null)
       Set()
     else 
