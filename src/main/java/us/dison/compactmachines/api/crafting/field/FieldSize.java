@@ -44,7 +44,7 @@ public enum FieldSize implements StringIdentifiable {
 		return center.offset(facing, projectorDistance + 1);
 	}
 	public BlockPos getOriginCenter() {
-		return BlockPos.ORIGIN.toImmutable().add(size, size, size).toImmutable();
+		return BlockPos.ORIGIN.toImmutable();
 	}
 	public Stream<BlockPos> getProjectorPoses() {
 		return Arrays.stream(new Direction[] { Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST })

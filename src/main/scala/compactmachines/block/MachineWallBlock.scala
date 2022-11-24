@@ -20,7 +20,7 @@ import us.dison.compactmachines.item.TunnelItem
 import us.dison.compactmachines.util.TunnelUtil
 import us.dison.compactmachines.block.entity.TunnelWallBlockEntity
 
-class MachineWallBlock(settings: AbstractBlock.Settings, breakable: Boolean) extends AbstractWallBlock(settings, breakable):
+class MachineWallBlock(settings: AbstractBlock.Settings, breakable: Boolean) extends Block(settings) with AbstractWallBlock(breakable):
   @annotation.nowarn("cat=deprecation")
   override def onUse(state: BlockState | Null, world: World, pos: BlockPos | Null, player: PlayerEntity | Null, hand: Hand | Null, hit: BlockHitResult | Null): ActionResult | Null =
     val s = super.onUse(state, world, pos, player, hand, hit)
@@ -62,7 +62,3 @@ class MachineWallBlock(settings: AbstractBlock.Settings, breakable: Boolean) ext
               case _ => ActionResult.PASS
                 
       case _ => s 
-  override def getTicker[T <: BlockEntity](world: World | Null, state: BlockState | Null, entityType: BlockEntityType[T] | Null) : BlockEntityTicker[T] | Null = 
-    BlockWithEntity.checkType(entityType, CompactMachines.MACHINE_WALL_BLOCK_ENTITY, MachineWallBlockEntity.tick)
-  override def createBlockEntity(pos: BlockPos | Null, state: BlockState | Null) : BlockEntity | Null = 
-    MachineWallBlockEntity(pos, state)

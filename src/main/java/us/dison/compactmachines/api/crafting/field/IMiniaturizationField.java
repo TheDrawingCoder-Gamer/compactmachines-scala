@@ -10,6 +10,7 @@ import net.minecraft.structure.Structure;
 // import net.minecraft.nbt.NbtElement;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.util.math.Box;
 
 public interface IMiniaturizationField {

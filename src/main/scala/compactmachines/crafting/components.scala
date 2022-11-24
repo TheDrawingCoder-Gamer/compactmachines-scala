@@ -103,7 +103,7 @@ object BlockComponent {
     .stable()
   val codec : Codec[BlockComponent] = RecordCodecBuilder.create(in => in.group(
     blockIdCodec.fieldOf("block").forGetter((it : BlockComponent) => it.getBlock()),
-    ScalaMapCodec(Codec.STRING, ScalaListCodec(Codec.STRING)).fieldOf("properties").forGetter((it : BlockComponent) => it.allowedValues.toMap)
+    ScalaMapCodec(Codec.STRING, ScalaListCodec(Codec.STRING)).optionalFieldOf("properties", Map()).forGetter((it : BlockComponent) => it.allowedValues.toMap)
       ).apply(in, (a : Block, b : Map[String, List[String]]) => BlockComponent(a, b))
 
   ) 

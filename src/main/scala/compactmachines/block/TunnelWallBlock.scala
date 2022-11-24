@@ -36,7 +36,7 @@ import us.dison.compactmachines.util.RedstoneUtil;
 import us.dison.compactmachines.util.TunnelUtil;
 import us.dison.compactmachines.util.HitUtil;
 
-class TunnelWallBlock(settings: net.minecraft.block.AbstractBlock.Settings, breakable: Boolean) extends AbstractWallBlock(settings, breakable):
+class TunnelWallBlock(settings: net.minecraft.block.AbstractBlock.Settings, breakable: Boolean) extends BlockWithEntity(settings) with AbstractWallBlock(breakable):
     setDefaultState(getStateManager().getDefaultState()
       .`with`(TunnelWallBlock.CONNECTED_SIDE, TunnelDirection.NoDir)
       .`with`(TunnelWallBlock.GOING, TunnelGoing.Neither)

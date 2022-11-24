@@ -22,6 +22,12 @@
         "adapter": "scala",
         "value": "us.dison.compactmachines.CompactMachines"
       }
+    ],
+    "compactmachines:plugin": [
+      {
+        "adapter": "scala",
+        "value": "us.dison.compactmachines.CompactMachinesCraftingPlugin"
+      }
     ]
   },
   "mixins": [

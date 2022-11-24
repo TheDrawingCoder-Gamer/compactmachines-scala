@@ -59,7 +59,8 @@ import us.dison.compactmachines.crafting.recipes.layers.{FilledComponentRecipeLa
 import net.fabricmc.loader.api.FabricLoader
 import us.dison.compactmachines.api.crafting.CompactCraftingPlugin
 import us.dison.compactmachines.api.crafting.IRegistrar
-import us.dison.compactmachines.crafting.recipes.{MiniturizationRecipeSerializer, CCBaseRecipeType}
+import us.dison.compactmachines.crafting.recipes.{MiniturizationRecipeSerializer, CCBaseRecipeType, MiniturizationRecipe}
+import us.dison.compactmachines.crafting.field.ActiveWorldFields
 object CompactMachines extends ModInitializer: 
   val MODID = "compactmachines" 
   val LOGGER = LogManager.getLogger("CompactMachines")
@@ -150,7 +151,7 @@ object CompactMachines extends ModInitializer:
   lazy val PROJECTOR_BLOCK_ENTITY : BlockEntityType[ProjectorBlockEntity] = Registry.register(Registry.BLOCK_ENTITY_TYPE, MODID + ":projector_block_entity", 
     FabricBlockEntityTypeBuilder.create(ProjectorBlockEntity(_, _), BLOCK_PROJECTOR).build(null))
   val ID_MINITURIZATION_RECIPE= Identifier(MODID, "miniturization_recipe")
-  val TYPE_MINITURIZATION_RECIPE = CCBaseRecipeType(ID_MINITURIZATION_RECIPE) 
+  val TYPE_MINITURIZATION_RECIPE = CCBaseRecipeType[MiniturizationRecipe](ID_MINITURIZATION_RECIPE) 
   private var roomManagerVar : Option[RoomManager] = Option.empty
   // safe, it shouldn't be accessed before server spins up 
   def roomManager = roomManagerVar.get 
@@ -162,6 +163,7 @@ object CompactMachines extends ModInitializer:
     ServerTickEvents.START_WORLD_TICK.register(world =>
         if world.getRegistryKey().equals(CMWORLD_KEY) && roomManagerVar.isDefined then  
           roomManager.onServerWorldTick(world)
+        ActiveWorldFields.tick(world)
     )
     ServerLifecycleEvents.SERVER_STARTED.register(server =>
         val world = server.getWorld(CMWORLD_KEY) 

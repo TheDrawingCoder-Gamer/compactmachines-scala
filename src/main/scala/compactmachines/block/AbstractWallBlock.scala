@@ -38,7 +38,7 @@ import net.minecraft.loot.context.LootContext.Builder
 import java.{util => ju}
 import us.dison.compactmachines.util.RoomUtil
 
-abstract class AbstractWallBlock(settings: AbstractBlock.Settings, private val breakable: Boolean) extends BlockWithEntity(settings): 
+trait AbstractWallBlock(private val breakable: Boolean) extends Block: 
   
   @annotation.nowarn("cat=deprecation") 
   override def calcBlockBreakingDelta(state: BlockState | Null, player: PlayerEntity | Null, world: BlockView | Null, pos: BlockPos | Null): Float = 
@@ -60,5 +60,3 @@ abstract class AbstractWallBlock(settings: AbstractBlock.Settings, private val b
       ju.List.of(ItemStack.EMPTY)
   override def getRenderType(state: BlockState | Null): BlockRenderType | Null = 
     BlockRenderType.MODEL
-  override def getTicker[T <: BlockEntity](world: World | Null, state: BlockState | Null, kind: BlockEntityType[T] | Null): BlockEntityTicker[T] | Null
-  override def createBlockEntity(pos: BlockPos | Null, state: BlockState | Null) : BlockEntity | Null

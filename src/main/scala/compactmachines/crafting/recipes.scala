@@ -433,7 +433,7 @@ package layers {
   }
   object HollowComponentRecipeLayer extends RecipeLayerType[HollowComponentRecipeLayer] {
     override val getCodec : Codec[HollowComponentRecipeLayer] = RecordCodecBuilder.create(it => it.group(
-        Codec.STRING.fieldOf("wall").forGetter(_.component)
+        Codec.STRING.fieldOf("component").forGetter(_.component)
     ).apply(it, i =>HollowComponentRecipeLayer(i)))
   }
 
@@ -497,9 +497,13 @@ package layers {
         val id = keyValuePair.getFirst()
         val reg = Registrar.registry 
         if (!reg.contains(id)) {
-          DataResult.error("Unknown registry key: " + id)
         }
-        DataResult.success(keyValuePair.mapFirst(it => reg.get(it).get))
+        reg.get(id) match {
+          case None => 
+            DataResult.error("Unknown registry key: " + id)
+          case Some(i) => 
+            DataResult.success(keyValuePair.mapFirst(_ => i))
+        }
       }
     }
     def encode[T](input : RecipeLayerType[?], ops : DynamicOps[T], prefix : T) = {
@@ -787,6 +791,7 @@ object MiniturizationRecipeCodec extends Codec[MiniturizationRecipe] {
     if (layers.error().isPresent()) {
       val partialLayers = layers.resultOrPartial(errorBuilder.append)
       partialLayers.ifPresent(it => recipe.applyLayers(it.asScala.toList))
+        CompactMachines.LOGGER.warn(errorBuilder.toString())
       DataResult.error(errorBuilder.toString(), Pair.of(recipe, input), Lifecycle.stable())
     } else {
       val layerList = layers.resultOrPartial(errorBuilder.append).orElse(Collections.emptyList()).asScala.toList
@@ -794,6 +799,7 @@ object MiniturizationRecipeCodec extends Codec[MiniturizationRecipe] {
       val hasFixedLayers = layerList.exists(l => l.isInstanceOf[IFixedSizedRecipeLayer])
       if (!hasFixedLayers && !canFitLayers) {
         errorBuilder.append("Specified recipe size will not fit in a crafting field: ").append(recipeSize)
+        CompactMachines.LOGGER.warn(errorBuilder.toString())
         DataResult.error(errorBuilder.toString(), Pair.of(recipe, input), Lifecycle.stable())
       } else {
         recipe.recalculateDimensions()
@@ -830,6 +836,7 @@ object MiniturizationRecipeCodec extends Codec[MiniturizationRecipe] {
         } else {
           if (recipe.outputs.length == 0) {  
             errorBuilder.append("No outputs were defined")
+            CompactMachines.LOGGER.warn(errorBuilder.toString())
             DataResult.error(errorBuilder.toString(), Pair.of(recipe, input), Lifecycle.stable())
           } else {
             val components = Codec.unboundedMap(Codec.STRING, componentCodec)

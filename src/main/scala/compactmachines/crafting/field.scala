@@ -35,6 +35,10 @@ import net.minecraft.nbt.NbtElement
 import net.minecraft.server.world.ServerWorld
 import us.dison.compactmachines.util._
 import us.dison.compactmachines.util.codecs.*
+import net.minecraft.util.registry.RegistryKey
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents 
+import net.minecraft.world.chunk.WorldChunk
+
 /*
 trait TMiniaturizationField extends IMiniaturizationField {
   override def getBounds() = bounds
@@ -61,11 +65,8 @@ class ActiveWorldFields(var level : World = null) extends PersistentState {
   def getFields() = fields.values.toList
   def tickFields() : Unit = {
     val loaded = fields.values.filter(_.isLoaded()).toSet 
-
-    if (loaded.isEmpty) 
-      return 
-
-    loaded.foreach(_.tick)
+     
+    loaded.foreach(_.tick())
   }
   def addFieldInstance(field : IMiniaturizationField) = {
     field.setWorld(level)
@@ -129,6 +130,22 @@ object ActiveWorldFields {
   val key = "compactmachines_fields"
   val codec = MiniaturizationField.codec.listOf()
 
+  val fieldManagers = HashMap[RegistryKey[World], ActiveWorldFields]()
+
+  def getOrCreate(world : World) : ActiveWorldFields = {
+    fieldManagers.get(world.getRegistryKey()) match {
+      case Some(fm) => 
+        fm
+      case None => 
+
+        val fm = this.get(world)
+        fieldManagers(world.getRegistryKey()) = fm 
+        fm
+    }
+  }
+  def tick(world : World) = {
+    getOrCreate(world).tickFields()
+  }
   def fromTag(tag : NbtCompound) = {
     val worldFields = ActiveWorldFields()
     codec.parse(NbtOps.INSTANCE, tag.getList("cm_fields", NbtElement.COMPOUND_TYPE))
@@ -136,7 +153,7 @@ object ActiveWorldFields {
       .ifPresent(f =>  worldFields.fields ++= Map.from(f.asScala.map(v => (v.asInstanceOf[IMiniaturizationField].getCenter(), v.asInstanceOf[IMiniaturizationField]))))
     worldFields
   }
-  def get(world : World) = {
+  private def get(world : World) = {
     val server = world.asInstanceOf[ServerWorld]
     val fields = server.getPersistentStateManager.getOrCreate[ActiveWorldFields](ActiveWorldFields.fromTag, () => ActiveWorldFields(world), key)
     fields.setLevel(world)
@@ -148,8 +165,21 @@ import net.minecraft.block.Blocks
 import net.minecraft.block.Block
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.particle.ParticleTypes
-class MiniaturizationField  extends IMiniaturizationField {
+
+
+class MiniaturizationField(private var level : Option[World])  extends IMiniaturizationField {
   CompactMachines.LOGGER.info("Field initialized!")
+  
+  ServerChunkEvents.CHUNK_UNLOAD.register((world, chunk) => 
+    if (level.exists(_.getRegistryKey() == world.getRegistryKey())) {
+        this.checkLoaded()
+    }      
+  )
+  ServerChunkEvents.CHUNK_LOAD.register((world, chunk) => 
+      if (level.exists(_ == world)) {
+        this.checkLoaded()
+      } 
+  )
   @BeanProperty
   private var fieldSize : FieldSize = FieldSize.INACTIVE
 
@@ -168,7 +198,6 @@ class MiniaturizationField  extends IMiniaturizationField {
   @BeanProperty
   var craftingState : EnumCraftingState = EnumCraftingState.NOT_MATCHED
 
-  private var level : Option[World] = None
 
   private val listeners = HashSet[IFieldListener]()
 
@@ -176,7 +205,7 @@ class MiniaturizationField  extends IMiniaturizationField {
   @BeanProperty 
   var progress : Int = 0
 
-  private var loaded : Boolean = false 
+  private var loaded : Boolean = true 
 
   var disabled_ = false 
   def disabled = disabled_ 
@@ -201,8 +230,10 @@ class MiniaturizationField  extends IMiniaturizationField {
   }
 
   override def checkLoaded() = {
-    CompactMachines.LOGGER.debug("Checking loaded state.")
-    this.loaded = level.get.isRegionLoaded(center.getX(), center.getZ(), center.getX() + fieldSize.getProjectorDistance() + 3, center.getZ() + fieldSize.getProjectorDistance + 3)
+    
+    // this.loaded = level.get.isRegionLoaded(center.getX(), center.getZ(), center.getX() + fieldSize.getProjectorDistance(), center.getZ() + fieldSize.getProjectorDistance())
+    // sus
+    this.loaded = true 
     if (loaded) {
       listeners.foreach(l => l.onFieldActivated(this))
     }
@@ -210,7 +241,7 @@ class MiniaturizationField  extends IMiniaturizationField {
   override def fieldContentsChanged() = {
     clearRecipe()
 
-    rescanTime = level.get.getTime() + 30 
+    rescanTime = level.map(_.getTime() + 30).getOrElse(0)
 
   }
   override def setRecipe(id : Identifier) = {
@@ -296,7 +327,6 @@ class MiniaturizationField  extends IMiniaturizationField {
   private def getCatalystsInField(level : WorldAccess, fieldBounds : Box, itemFilter : ICatalystMatcher) = {
     level.getEntitiesByClass(classOf[ItemEntity], fieldBounds, it => itemFilter.matches(it.getStack))
   }
-  // currently causes scala to freak out
   def doRecipeScan() : Unit = {
     CompactMachines.LOGGER.info("starting scan")
     for (world <- level) {
@@ -313,9 +343,8 @@ class MiniaturizationField  extends IMiniaturizationField {
       val recipes = world.getRecipeManager()
         .listAllOfType(CompactMachines.TYPE_MINITURIZATION_RECIPE)
         .stream()
-        .filter(recipe => BlockSpaceUtil.boundsFitsInside(recipe.asInstanceOf[MiniturizationRecipe].getDimensions(), filledBounds))
+        .filter(recipe => BlockSpaceUtil.boundsFitsInside(recipe.getDimensions(), filledBounds))
         .toScala(Set)
-        .asInstanceOf[Set[MiniturizationRecipe]]
       if (recipes.isEmpty) {
         clearRecipe()
         return 
@@ -439,7 +468,7 @@ object MiniaturizationField {
       ScalaBooleanCodec.fieldOf("enabled").forGetter((it : IMiniaturizationField) => it.enabled())
     ).apply(in, (size : FieldSize, center : BlockPos, state : EnumCraftingState, recipe : Identifier,  progress : Int, matchedBlocksNbt  : NbtCompound, enabled : Boolean) => {
       val matchedBlocks : Structure = Structure().tap(_.readNbt(matchedBlocksNbt))
-      val field = MiniaturizationField()
+      val field = MiniaturizationField(None)
       field.setRecipe(recipe)
       field.setCenter(center)
       field.setCraftingState(state) 
@@ -452,9 +481,9 @@ object MiniaturizationField {
       field.fieldSize = size
       field
     }))
-
+  @deprecated
   def ofSizeAndCenter(fieldSize : FieldSize, center : BlockPos) = { 
-    val field = MiniaturizationField()
+    val field = MiniaturizationField(None)
     field.center = center 
     field.fieldSize = fieldSize 
     field.craftingState = EnumCraftingState.NOT_MATCHED 
