@@ -13,18 +13,18 @@ These are the main component of this mod and allow you to build complicated mach
 #### Sizes
 There are 6 different sizes of machines:
 
-| Name                        | Description  |
-| ----------------------------| -------------|
-| Tiny                        | 3x3x3        |
-| Small                       | 5x5x5        |
-| Normal                      | 7x7x7        |
-| Large                       | 9x9x9        |
-| Giant                       | 11x11x11     |
-| Maximum                     | 13x13x13     |
+| Name    | Description |
+|---------|-------------|
+| Tiny    | 3x3x3       |
+| Small   | 5x5x5       |
+| Normal  | 7x7x7       |
+| Large   | 9x9x9       |
+| Giant   | 11x11x11    |
+| Maximum | 13x13x13    |
 
 #### Personal Shrinking Device
 
-This little tool allows you to enter your Compact Machines. Right clicking a Compact Machine world will teleport you inside.
+This little tool allows you to enter your Compact Machines. Right-clicking a Compact Machine world will teleport you inside.
 
 #### Spawn location
 

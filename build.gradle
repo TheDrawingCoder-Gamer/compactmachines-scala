@@ -27,6 +27,10 @@ repositories {
     // See https://docs.gradle.org/current/userguide/declaring_repositories.html
     // for more information about repositories.  
     maven { url "https://maven.bai.lol" }
+    maven {
+        name = 'Ladysnake Mods'
+        url = 'https://ladysnake.jfrog.io/artifactory/mods'
+    }
 }
 
 dependencies {
@@ -40,8 +44,8 @@ dependencies {
     include modApi('teamreborn:energy:2.2.0') {
         exclude(group: "net.fabricmc.fabric-api")
     }
-    modApi("net.fabricmc:fabric-language-scala:2.0.0+scala.3.0.2") {
-	exclude group: 'net.fabricmc'
+    modImplementation("net.fabricmc:fabric-language-scala:2.0.0+scala.3.0.2") {
+	    exclude group: 'net.fabricmc'
     }
     // compile against the API
     modCompileOnly "mcp.mobius.waila:wthit-api:fabric-${project.wthit_version}"
@@ -50,7 +54,11 @@ dependencies {
     modRuntimeOnly "mcp.mobius.waila:wthit:fabric-${project.wthit_version}"
     modRuntimeOnly "lol.bai:badpackets:fabric-0.2.0"
 
-    
+    testImplementation "org.scalatest:scalatest_3:3.2.14"
+
+    include modImplementation("dev.onyxstudios.cardinal-components-api:cardinal-components-base:4.2.0")
+    include modImplementation("dev.onyxstudios.cardinal-components-api:cardinal-components-world:4.2.0")
+    // testCompileOnly "org.scala-lang:scala3-library_3:3.0.2"
     
 }
 loom {

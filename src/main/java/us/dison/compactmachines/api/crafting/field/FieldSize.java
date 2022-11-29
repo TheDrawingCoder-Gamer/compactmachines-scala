@@ -1,6 +1,7 @@
 package us.dison.compactmachines.api.crafting.field;
 
 import net.minecraft.util.StringIdentifiable;
+import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
@@ -62,15 +63,15 @@ public enum FieldSize implements StringIdentifiable {
 		if (axis == Direction.Axis.Y) {
 			return Stream.empty();
 		}
-		return Arrays.stream(Direction.values()).filter(axis::test)
+		return Arrays.stream(Direction.values()).filter(axis)
 			.map(it -> getProjLocationWithDirection(center, it));
 	}
 
 	public static boolean canFitDimensions(int i) {
 		return (i <= ABSURD.getDimensions() && i >= SMALL.getDimensions());
 	}
-	public Box getBoundsAtPosition(BlockPos center) {
-		return new Box(center).expand(size);
+	public BlockBox getBoundsAtPosition(BlockPos center) {
+		return new BlockBox(center).expand(size);
 	}
 	public BlockPos getBoundsAsBlockPos() {
 		final int dims = getDimensions();

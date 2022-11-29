@@ -2,7 +2,9 @@ package us.dison.compactmachines.api.crafting.field;
 
 import java.util.Optional;
 import java.util.stream.Stream;
-import us.dison.compactmachines.api.crafting.EnumCraftingState; 
+
+import net.minecraft.util.math.BlockBox;
+import us.dison.compactmachines.api.crafting.EnumCraftingState;
 import us.dison.compactmachines.api.crafting.IMiniaturizationRecipe;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.nbt.NbtCompound;
@@ -10,12 +12,11 @@ import net.minecraft.structure.Structure;
 // import net.minecraft.nbt.NbtElement;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.util.math.Box;
 
 public interface IMiniaturizationField {
 	default void dispose() {}
-	Box getBounds();
+	BlockBox getBounds();
 	FieldSize getFieldSize();
 	BlockPos getCenter();
 	void setCenter(BlockPos center);
@@ -86,7 +87,7 @@ public interface IMiniaturizationField {
 	void disable();
 	void checkRedstone();
 
-	boolean enabled();
+	boolean isEnabled();
 
 	void cleanForDisposal();
 }
