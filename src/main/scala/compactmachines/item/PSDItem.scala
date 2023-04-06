@@ -8,7 +8,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
@@ -29,7 +29,7 @@ class PSDItem(settings: Item.Settings) extends Item(settings):
     CompactMachines.roomManager.getRoomFromPos(player.getBlockPos()).foreach(room => 
       val machineWorld = server.getWorld(RegistryKey.of(Registry.WORLD_KEY, room.world))
       val machinePos = room.machine 
-      CompactMachines.LOGGER.info("Teleporting player " + player.getDisplayName.asString + " out of machine #" + room.number.toString + " at: " + room.center.toShortString)
+      CompactMachines.LOGGER.info("Teleporting player " + player.getDisplayName.toString + " out of machine #" + room.number.toString + " at: " + room.center.toShortString)
       RoomUtil.teleportOutOfRoom(machineWorld, player, room) 
       // CompactMachines.roomManager.rmPlayer(room.number, player.getUuid)
     )
@@ -40,7 +40,7 @@ class PSDItem(settings: Item.Settings) extends Item(settings):
       if world.getRegistryKey().equals(CompactMachines.CMWORLD_KEY) then 
         () 
       else 
-        MinecraftClient.getInstance().nn.setScreen(PSDScreen(TranslatableText("compactmachines.psd.pages.machine.title")))
+        MinecraftClient.getInstance().nn.setScreen(PSDScreen(Text.translatable("compactmachines.psd.pages.machine.title")))
       TypedActionResult.success(user.getStackInHand(hand))
     else 
       Option(world.getServer()).map(server => 
@@ -48,7 +48,7 @@ class PSDItem(settings: Item.Settings) extends Item(settings):
           if (user.isSneaking()) {
             CompactMachines.roomManager.getRoomFromPos(user.getBlockPos()).foreach(room => 
               CompactMachines.roomManager.updateSpawnPos(room.number, user.getBlockPos())
-              serverPlayer.sendMessage(TranslatableText("message.compactmachines.spawnpoint_set"), true)
+              serverPlayer.sendMessage(Text.translatable("message.compactmachines.spawnpoint_set"), true)
             )
           } else {
             teleportOutOfRoom(server, serverPlayer)

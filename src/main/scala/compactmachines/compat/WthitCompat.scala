@@ -11,7 +11,7 @@ import mcp.mobius.waila.api.{
   IServerAccessor,
   IPluginConfig,
   TooltipPosition} 
-import net.minecraft.text.{Text, TranslatableText}
+import net.minecraft.text.Text
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.client.MinecraftClient
 import us.dison.compactmachines.data.persistent.{Room, RoomManager}
@@ -66,9 +66,9 @@ object MachineBlockTooltip extends IBlockComponentProvider with IServerDataProvi
         val item = list.getCompound(i) 
         val dir = TunnelDirection.fromOrdinal(item.getInt("tdir"))
         val ttype = TunnelType.fromOrdinal(item.getInt("ttype"))
-        val text = TranslatableText(s"compactmachines.direction.${dir.asString()}")
+        val text = Text.translatable(s"compactmachines.direction.${dir.asString()}")
            .append(": ")
-           .append(TranslatableText(s"item.compactmachines.tunnels.${ttype.asString()}"))
+           .append(Text.translatable(s"item.compactmachines.tunnels.${ttype.asString()}"))
         tooltip.addLine(text)
       }
     }

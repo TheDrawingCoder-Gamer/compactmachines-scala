@@ -11,7 +11,7 @@ enum TunnelType(val tunnelName: String, val id: Int, val color: Int) extends  ja
   
   
 object TunnelType:
-  val CODEC : Codec[TunnelType] = StringIdentifiable.createCodec[TunnelType](() => TunnelType.values.asInstanceOf[Array[TunnelType | Null] | Null], name => TunnelType.byName(name.nn).getOrElse(null)).nn
+  val CODEC : Codec[TunnelType] = StringIdentifiable.createCodec[TunnelType](() => TunnelType.values.asInstanceOf[Array[TunnelType | Null] | Null]).nn
 
 
   def byID(id: Int) : Option[TunnelType] = {

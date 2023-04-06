@@ -11,7 +11,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
@@ -59,11 +59,11 @@ class MachineBlock(settings: AbstractBlock.Settings, val machineSize: Option[Mac
                     machineEntity.owner = Some(serverPlayer.getUuid)
                     val roomCenterPos = RoomUtil.getCenterPosByID(machineID)
                     val spawnPos = roomCenterPos.add(0, -(mSize.size/2d)+1, 0)
-                    serverPlayer.sendMessage(TranslatableText("message.compactmachines.generating_room"), true) 
+                    serverPlayer.sendMessage(Text.translatable("message.compactmachines.generating_room"), true) 
                     machineEntity.size match 
                       case Some(size) => 
                         RoomUtil.generateRoomFromId(cmWorld, machineID, size)
-                        serverPlayer.sendMessage(TranslatableText("message.compactmachines.ready").formatted(Formatting.GREEN), true)
+                        serverPlayer.sendMessage(Text.translatable("message.compactmachines.ready").formatted(Formatting.GREEN), true)
                         roomManager.addRoom(Room(world.getRegistryKey.getValue, serverPlayer.getUuidAsString, pos, roomCenterPos, spawnPos, machineID, List(), List()))
                         ActionResult.SUCCESS
                       case None => 
@@ -72,13 +72,13 @@ class MachineBlock(settings: AbstractBlock.Settings, val machineSize: Option[Mac
                     (roomManager.getRoomByNumber(id) : Option[Room] ) match 
                       case Some(room) => 
                         val spawnPos = room.spawnPos 
-                        CompactMachines.LOGGER.info("Teleporting player " + player.getDisplayName().asString() + " into machine #" + id + " at: " + spawnPos.toShortString)
+                        CompactMachines.LOGGER.info("Teleporting player " + player.getDisplayName().toString() + " into machine #" + id + " at: " + spawnPos.toShortString)
                         serverPlayer.teleport(cmWorld, spawnPos.getX + 0.5d, spawnPos.getY + 1d, spawnPos.getZ + 0.5d, 0, 0)
                         roomManager.addPlayer(id, serverPlayer.getUuid) 
                         ActionResult.SUCCESS 
                       case None => 
-                        CompactMachines.LOGGER.error("Player " + player.getDisplayName().asString() + " attempted to enter a machine with an invalid id! (#" + id.toString + ")")
-                        player.sendMessage(TranslatableText("message.compactmachines.invalid_room").formatted(Formatting.RED), false)
+                        CompactMachines.LOGGER.error("Player " + player.getDisplayName().toString() + " attempted to enter a machine with an invalid id! (#" + id.toString + ")")
+                        player.sendMessage(Text.translatable("message.compactmachines.invalid_room").formatted(Formatting.RED), false)
                         ActionResult.PASS 
                   case _ => 
                     CompactMachines.LOGGER.warn("Room doesn't have assigned size")
@@ -185,7 +185,7 @@ class MachineBlock(settings: AbstractBlock.Settings, val machineSize: Option[Mac
               case serverPlayer : ServerPlayerEntity => 
                 val now = serverPlayer.server.getTicks() 
                 if now >= lastInsidePlayerWarning + 10 then 
-                  serverPlayer.sendMessage(TranslatableText("message.compactmachine.player_inside").formatted(Formatting.RED), true)
+                  serverPlayer.sendMessage(Text.translatable("message.compactmachine.player_inside").formatted(Formatting.RED), true)
                   lastInsidePlayerWarning = now
               case _ => ()
             0

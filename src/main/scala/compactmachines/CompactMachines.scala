@@ -244,7 +244,6 @@ object CompactMachines extends ModInitializer:
 
     Biome.Builder()
       .precipitation(Biome.Precipitation.NONE)
-      .category(Biome.Category.NONE) 
       .temperature(0.8f)
       .downfall(0)
       .effects(BiomeEffects.Builder()

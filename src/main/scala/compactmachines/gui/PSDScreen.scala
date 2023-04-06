@@ -8,7 +8,6 @@ import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.render.*
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.text.Text
-import net.minecraft.text.TranslatableText
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import us.dison.compactmachines.CompactMachines
@@ -26,10 +25,10 @@ class PSDScreen(title: Text) extends Screen(title):
     val k : Int = (this.height - 256) / 2 + 16 
     this.drawTexture(matrices, j, k, 0, 0, 256, 256);
     textRenderer.nn.drawWithShadow(matrices,
-      TranslatableText(CompactMachines.MODID + ".psd.pages.machines.title"),
+      Text.translatable(CompactMachines.MODID + ".psd.pages.machines.title"),
       j.toFloat+17, k.toFloat+16, Formatting.GOLD.getColorValue) 
     
-    val text = MultilineText.create(textRenderer.nn, TranslatableText(CompactMachines.MODID + ".psd.pages.machines"), 222) 
+    val text = MultilineText.create(textRenderer.nn, Text.translatable(CompactMachines.MODID + ".psd.pages.machines"), 222) 
     
     text.drawWithShadow(matrices, j + 17, k + 16 + 15, 10, Formatting.WHITE.getColorValue)
     

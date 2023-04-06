@@ -13,7 +13,7 @@ enum TunnelDirection(val direction: String) extends java.lang.Enum[TunnelDirecti
   case Down extends TunnelDirection("down")
   case NoDir extends TunnelDirection("none")
   
-  def toDirection() : Option[Direction] = 
+  def toDirection() : Option[Direction] = { 
     this match 
       case North => Option.apply(Direction.NORTH)
       case East => Option.apply(Direction.EAST) 
@@ -22,7 +22,7 @@ enum TunnelDirection(val direction: String) extends java.lang.Enum[TunnelDirecti
       case Up => Option.apply(Direction.UP )
       case Down => Option.apply(Direction.DOWN) 
       case NoDir => None
-  end toDirection
+  }
   def rotateClockwise(axis: Axis) = 
     this match 
       case NoDir => NoDir 
@@ -52,7 +52,7 @@ object TunnelDirection:
       case Direction.UP => Up 
       case Direction.DOWN => Down 
     }
-  val CODEC : Codec[TunnelDirection] = StringIdentifiable.createCodec(() => TunnelDirection.values, TunnelDirection.byName(_).getOrElse(null))
+  val CODEC : Codec[TunnelDirection] = StringIdentifiable.createCodec(() => TunnelDirection.values)
 end TunnelDirection
 
 

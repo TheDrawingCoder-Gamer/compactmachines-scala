@@ -12,9 +12,7 @@ import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.registry.Registry;
 import us.dison.compactmachines.CompactMachines;
@@ -38,7 +36,7 @@ object CompactMachinesClient extends ClientModInitializer:
           MachineSize.getFromSize(pathParts(1)) match
             
             case Some(machineSize) => 
-              lines.add(1, TranslatableText("tooltip.compactmachines.machine.size", machineSize.size, machineSize.size, machineSize.size).formatted(Formatting.GRAY)) 
+              lines.add(1, Text.translatable("tooltip.compactmachines.machine.size", machineSize.size, machineSize.size, machineSize.size).formatted(Formatting.GRAY)) 
               if (stack.getNbt() != null) {
                 val owner = stack.getSubNbt("BlockEntityTag").getUuid("uuid");
                 var playerName = owner.toString();
@@ -49,13 +47,13 @@ object CompactMachinesClient extends ClientModInitializer:
                         playerName = playerListEntry.getProfile().getName();
                     }
                 }
-                if (context.isAdvanced()) lines.add(1, TranslatableText("tooltip.compactmachines.machine.owner", playerName).formatted(Formatting.GRAY));
-                lines.add(1, TranslatableText("tooltip.compactmachines.machine.id", stack.getSubNbt("BlockEntityTag").getInt("number")).formatted(Formatting.GRAY));
+                if (context.isAdvanced()) lines.add(1, Text.translatable("tooltip.compactmachines.machine.owner", playerName).formatted(Formatting.GRAY));
+                lines.add(1, Text.translatable("tooltip.compactmachines.machine.id", stack.getSubNbt("BlockEntityTag").getInt("number")).formatted(Formatting.GRAY));
               }
             case _ => ()
             } else
             if (Registry.ITEM.getId(stack.getItem()).equals(ID_WALL_UNBREAKABLE)) { // Unbreakable wall tooltip
-                lines.add(1, TranslatableText("tooltip.compactmachines.details.solid_wall").formatted(Formatting.RED));
+                lines.add(1, Text.translatable("tooltip.compactmachines.details.solid_wall").formatted(Formatting.RED));
             } 
         });
 

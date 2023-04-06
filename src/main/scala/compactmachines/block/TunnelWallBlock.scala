@@ -12,7 +12,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.EnumProperty;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -151,8 +151,8 @@ class TunnelWallBlock(settings: net.minecraft.block.AbstractBlock.Settings, brea
                             wall.outgoing = !wall.outgoing
                             world.setBlockState(pos, world.getBlockState(pos).`with`(TunnelWallBlock.GOING, if wall.outgoing then TunnelGoing.Outgoing else TunnelGoing.Incoming))
                             this.update(world.getBlockState(pos), world, pos)
-                            player.sendMessage(TranslatableText("compactmachines.iodirection.going",
-                            TranslatableText("compactmachines.iodirection." + (if wall.outgoing then "outgoing" else "incoming"))), true)
+                            player.sendMessage(Text.translatable("compactmachines.iodirection.going",
+                            Text.translatable("compactmachines.iodirection." + (if wall.outgoing then "outgoing" else "incoming"))), true)
                             ActionResult.SUCCESS
                           } else {
                             if hand == Hand.MAIN_HAND then 
@@ -164,8 +164,8 @@ class TunnelWallBlock(settings: net.minecraft.block.AbstractBlock.Settings, brea
                                      
                                     roomManager.updateTunnel(room.number, newTunnel)
                                     CompactMachines.LOGGER.info(wall.tunnel)
-                                    player.sendMessage(TranslatableText("compactmachines.direction.side", 
-                                      TranslatableText("compactmachines.direction." + nextSide.direction.toLowerCase())), true)
+                                    player.sendMessage(Text.translatable("compactmachines.direction.side", 
+                                      Text.translatable("compactmachines.direction." + nextSide.direction.toLowerCase())), true)
                                     ActionResult.SUCCESS 
                                   case _ => 
                                     ActionResult.SUCCESS

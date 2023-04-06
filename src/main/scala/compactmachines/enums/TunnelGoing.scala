@@ -18,5 +18,5 @@ object TunnelGoing {
     }
     return None
   }
-  val CODEC : Codec[TunnelGoing] = StringIdentifiable.createCodec(() => TunnelGoing.values, TunnelGoing.byName(_).getOrElse(null))
+  val CODEC : Codec[TunnelGoing] = StringIdentifiable.createCodec(() => TunnelGoing.values)
 }
